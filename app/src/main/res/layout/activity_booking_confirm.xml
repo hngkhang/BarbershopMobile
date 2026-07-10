@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bookingConfirmRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".BookingConfirmActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bookingConfirmTopBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_16"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="@drawable/bg_icon_button"
+            android:contentDescription="@string/action_back"
+            android:padding="@dimen/space_12"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textBookingConfirmTitle"
+            style="@style/TextAppearance_ArtBarbershop_ScreenTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/screen_booking_confirm_title"
+            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/buttonBack" />
+
+        <FrameLayout
+            android:id="@+id/bookingConfirmTitleDivider"
+            android:layout_width="@dimen/title_divider_width"
+            android:layout_height="@dimen/space_12"
+            app:layout_constraintEnd_toEndOf="@id/textBookingConfirmTitle"
+            app:layout_constraintStart_toStartOf="@id/textBookingConfirmTitle"
+            app:layout_constraintTop_toBottomOf="@id/textBookingConfirmTitle">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/title_divider_height"
+                android:layout_gravity="center"
+                android:background="@color/color_accent_light" />
+
+            <View
+                android:layout_width="@dimen/title_divider_dot_size"
+                android:layout_height="@dimen/title_divider_dot_size"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_title_gold_divider" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:id="@+id/bookingConfirmScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        android:paddingBottom="@dimen/space_16"
+        app:layout_constraintBottom_toTopOf="@id/bookingConfirmActions"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bookingConfirmTopBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/booking_confirm_visual_size"
+                android:layout_marginTop="@dimen/space_8">
+
+                <FrameLayout
+                    android:layout_width="@dimen/booking_confirm_visual_size"
+                    android:layout_height="@dimen/booking_confirm_visual_size"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_confirmation_visual">
+
+                    <ImageView
+                        android:layout_width="@dimen/space_64"
+                        android:layout_height="@dimen/space_64"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/app_name"
+                        android:src="@drawable/ic_barber_pole" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="@dimen/space_48"
+                    android:layout_height="@dimen/space_48"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_confirmation_check"
+                    android:translationX="@dimen/booking_confirm_check_offset">
+
+                    <ImageView
+                        android:layout_width="@dimen/space_24"
+                        android:layout_height="@dimen/space_24"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/booking_confirm_pay"
+                        android:src="@drawable/ic_check" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_SectionTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/booking_confirm_header_title" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:gravity="center"
+                android:text="@string/booking_confirm_header_subtitle" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget_ArtBarbershop_Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_20"
+                app:cardUseCompatPadding="false">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_16">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/booking_row_icon_size"
+                            android:layout_height="@dimen/booking_row_icon_size"
+                            android:contentDescription="@string/booking_summary_service"
+                            android:src="@drawable/ic_scissors" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/booking_summary_service" />
+
+                        <TextView
+                            android:id="@+id/textConfirmService"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/color_text_primary"
+                            tools:text="Haircut, Shampoo" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_thin"
+                        android:background="@color/color_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/booking_row_icon_size"
+                            android:layout_height="@dimen/booking_row_icon_size"
+                            android:contentDescription="@string/booking_summary_barber"
+                            android:src="@drawable/ic_person" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/booking_summary_barber" />
+
+                        <TextView
+                            android:id="@+id/textConfirmBarber"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/color_text_primary"
+                            android:textStyle="bold"
+                            tools:text="Michael" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_thin"
+                        android:background="@color/color_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/booking_row_icon_size"
+                            android:layout_height="@dimen/booking_row_icon_size"
+                            android:contentDescription="@string/booking_summary_date"
+                            android:src="@drawable/ic_calendar" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/booking_summary_date" />
+
+                        <TextView
+                            android:id="@+id/textConfirmDate"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/color_text_primary"
+                            android:textStyle="bold"
+                            tools:text="Wed, May 22, 2024" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_thin"
+                        android:background="@color/color_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/booking_row_icon_size"
+                            android:layout_height="@dimen/booking_row_icon_size"
+                            android:contentDescription="@string/booking_summary_start_time"
+                            android:src="@drawable/ic_clock" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/booking_summary_start_time" />
+
+                        <TextView
+                            android:id="@+id/textConfirmStartTime"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/color_text_primary"
+                            tools:text="10:00 AM" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_thin"
+                        android:background="@color/color_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/booking_row_icon_size"
+                            android:layout_height="@dimen/booking_row_icon_size"
+                            android:contentDescription="@string/booking_summary_end_time"
+                            android:src="@drawable/ic_clock" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/booking_summary_end_time" />
+
+                        <TextView
+                            android:id="@+id/textConfirmEndTime"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/color_text_primary"
+                            tools:text="10:45 AM" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_thin"
+                        android:background="@color/color_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/booking_row_icon_size"
+                            android:layout_height="@dimen/booking_row_icon_size"
+                            android:contentDescription="@string/booking_summary_duration"
+                            android:src="@drawable/ic_clock" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/booking_summary_duration" />
+
+                        <TextView
+                            android:id="@+id/textConfirmDuration"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/color_text_primary"
+                            tools:text="45 min" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_thin"
+                        android:background="@color/color_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/booking_row_icon_size"
+                            android:layout_height="@dimen/booking_row_icon_size"
+                            android:contentDescription="@string/booking_summary_note"
+                            android:src="@drawable/ic_note" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/booking_summary_note" />
+
+                        <TextView
+                            android:id="@+id/textConfirmNote"
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.35"
+                            android:ellipsize="end"
+                            android:gravity="end"
+                            android:maxLines="1"
+                            android:textColor="@color/color_text_primary"
+                            tools:text="Please keep the top a bit longer." />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget_ArtBarbershop_Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_12"
+                android:layout_marginBottom="@dimen/space_12"
+                app:cardUseCompatPadding="false">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_16">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/space_32"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textConfirmPrimaryLabel"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/booking_price_haircut" />
+
+                        <TextView
+                            android:id="@+id/textConfirmPrimaryPrice"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/color_text_primary"
+                            android:textStyle="bold"
+                            tools:text="$25.00" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/space_32"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textConfirmAddonLabel"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/booking_price_shampoo" />
+
+                        <TextView
+                            android:id="@+id/textConfirmAddonPrice"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/color_text_primary"
+                            android:textStyle="bold"
+                            tools:text="$12.00" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_thin"
+                        android:layout_marginTop="@dimen/space_8"
+                        android:layout_marginBottom="@dimen/space_8"
+                        android:background="@color/color_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/space_32"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/booking_price_subtotal" />
+
+                        <TextView
+                            android:id="@+id/textConfirmSubtotal"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/color_text_primary"
+                            tools:text="$37.00" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/space_32"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/booking_price_tax" />
+
+                        <TextView
+                            android:id="@+id/textConfirmTax"
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/color_text_primary"
+                            tools:text="$0.00" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/space_48"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/booking_total_amount"
+                            android:textColor="@color/color_primary"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/textConfirmTotalAmount"
+                            style="@style/TextAppearance_ArtBarbershop_SectionTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/color_primary"
+                            tools:text="$37.00" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/bookingConfirmActions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_12"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        android:paddingBottom="@dimen/space_12"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonEditBooking"
+            style="@style/Widget_ArtBarbershop_SecondaryButton"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginEnd="@dimen/space_8"
+            android:layout_weight="1"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/booking_edit"
+            android:textSize="@dimen/text_caption" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonConfirmPay"
+            style="@style/Widget_ArtBarbershop_PrimaryButton"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginStart="@dimen/space_8"
+            android:layout_weight="1"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/booking_confirm_pay"
+            android:textSize="@dimen/text_caption" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

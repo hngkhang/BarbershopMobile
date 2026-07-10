@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="top"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/screen_horizontal_padding"
+    android:paddingTop="@dimen/space_8"
+    android:paddingEnd="@dimen/screen_horizontal_padding"
+    android:paddingBottom="@dimen/space_8">
+
+    <FrameLayout
+        android:layout_width="@dimen/chat_avatar_size"
+        android:layout_height="@dimen/chat_avatar_size"
+        android:background="@drawable/bg_ai_booking_circle">
+
+        <ImageView
+            android:layout_width="@dimen/space_24"
+            android:layout_height="@dimen/space_24"
+            android:layout_gravity="center"
+            android:contentDescription="@string/ai_assistant_name"
+            android:src="@drawable/ic_robot" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_10"
+        android:background="@drawable/bg_chat_ai_bubble"
+        android:maxWidth="@dimen/chat_bubble_max_width"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textChatMessage"
+            style="@style/TextAppearance_ArtBarbershop_Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_text_primary"
+            tools:text="Hello, Alex! I would be happy to help you book your appointment." />
+
+        <LinearLayout
+            android:id="@+id/layoutThinkingDots"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_24"
+            android:layout_marginTop="@dimen/space_4"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <View
+                android:layout_width="@dimen/thinking_dot_size"
+                android:layout_height="@dimen/thinking_dot_size"
+                android:background="@drawable/bg_thinking_dot" />
+
+            <View
+                android:layout_width="@dimen/thinking_dot_size"
+                android:layout_height="@dimen/thinking_dot_size"
+                android:layout_marginStart="@dimen/space_6"
+                android:background="@drawable/bg_thinking_dot" />
+
+            <View
+                android:layout_width="@dimen/thinking_dot_size"
+                android:layout_height="@dimen/thinking_dot_size"
+                android:layout_marginStart="@dimen/space_6"
+                android:background="@drawable/bg_thinking_dot" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textChatTime"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="@dimen/space_8"
+            tools:text="9:41 AM" />
+    </LinearLayout>
+</LinearLayout>

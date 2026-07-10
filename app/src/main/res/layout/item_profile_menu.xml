@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profileMenuRow"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/space_56"
+    android:background="@color/color_surface"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/touch_target_min"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_16"
+    android:paddingEnd="@dimen/space_12">
+
+    <ImageView
+        android:id="@+id/imageProfileMenuIcon"
+        android:layout_width="@dimen/profile_menu_icon_size"
+        android:layout_height="@dimen/profile_menu_icon_size"
+        android:contentDescription="@string/action_open"
+        tools:src="@drawable/ic_calendar" />
+
+    <TextView
+        android:id="@+id/textProfileMenuTitle"
+        style="@style/TextAppearance_ArtBarbershop_Body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_16"
+        android:layout_weight="1"
+        android:textColor="@color/color_text_primary"
+        tools:text="My Appointments" />
+
+    <ImageView
+        android:id="@+id/imageProfileMenuChevron"
+        android:layout_width="@dimen/profile_menu_icon_size"
+        android:layout_height="@dimen/profile_menu_icon_size"
+        android:contentDescription="@string/action_open"
+        android:src="@drawable/ic_chevron_right" />
+</LinearLayout>

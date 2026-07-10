@@ -1,0 +1,19 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Barbershop" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">@color/color_bg</item>
+        <item name="android:navigationBarColor">@color/color_surface</item>
+        <item name="android:statusBarColor">@color/color_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorSecondary">@color/color_accent</item>
+        <item name="colorError">@color/color_error</item>
+        <item name="android:colorAccent">@color/color_accent</item>
+        <item name="materialButtonStyle">@style/Widget_ArtBarbershop_PrimaryButton</item>
+        <item name="textInputStyle">@style/Widget_ArtBarbershop_TextInputLayout</item>
+    </style>
+
+    <style name="Theme.Barbershop" parent="Base.Theme.Barbershop" />
+</resources>

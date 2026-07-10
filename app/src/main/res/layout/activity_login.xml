@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/loginRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    tools:context=".LoginActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/auth_min_height"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_32"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        android:paddingBottom="@dimen/space_24">
+
+        <LinearLayout
+            android:id="@+id/brandHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="@dimen/space_32"
+                android:layout_height="@dimen/space_32"
+                android:contentDescription="Art Barbershop logo"
+                android:src="@drawable/ic_scissors"
+                app:tint="@color/color_accent" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:text="Art Barbershop"
+                android:textColor="@color/color_text_primary" />
+
+            <View
+                android:layout_width="@dimen/title_divider_width"
+                android:layout_height="@dimen/title_divider_height"
+                android:layout_marginTop="@dimen/space_6"
+                android:background="@drawable/bg_title_gold_divider" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textWelcome"
+            style="@style/TextAppearance_ArtBarbershop_ScreenTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_24"
+            android:text="Welcome back!"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/brandHeader" />
+
+        <TextView
+            android:id="@+id/textWelcomeSubtitle"
+            style="@style/TextAppearance_ArtBarbershop_Body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_6"
+            android:text="Sign in to continue your style journey."
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textWelcome" />
+
+        <FrameLayout
+            android:id="@+id/illustrationPanel"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/auth_illustration_height"
+            android:layout_marginTop="@dimen/space_16"
+            android:background="@drawable/bg_auth_illustration_panel"
+            android:contentDescription="Barber illustration placeholder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textWelcomeSubtitle">
+
+            <ImageView
+                android:layout_width="@dimen/brand_logo_size"
+                android:layout_height="@dimen/brand_logo_size"
+                android:layout_gravity="center"
+                android:alpha="0.88"
+                android:contentDescription="Barber pole illustration"
+                android:src="@drawable/ic_barber_pole" />
+        </FrameLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/inputEmailLayout"
+            style="@style/Widget_ArtBarbershop_TextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_20"
+            android:hint="Email"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/illustrationPanel"
+            app:startIconDrawable="@drawable/ic_email">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/inputEmail"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/input_height"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/color_text_primary"
+                android:textColorHint="@color/color_text_muted"
+                tools:text="hello@artbarbershop.com" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/inputPasswordLayout"
+            style="@style/Widget_ArtBarbershop_TextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_12"
+            android:hint="Password"
+            app:endIconMode="password_toggle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/inputEmailLayout"
+            app:startIconDrawable="@drawable/ic_lock">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/inputPassword"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/input_height"
+                android:inputType="textPassword"
+                android:textColor="@color/color_text_primary"
+                android:textColorHint="@color/color_text_muted"
+                tools:text="password" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/linkForgotPassword"
+            style="@style/TextAppearance_ArtBarbershop_Body"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_target_min"
+            android:gravity="center"
+            android:text="Forgot password?"
+            android:textColor="@color/color_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/inputPasswordLayout" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonLogin"
+            style="@style/Widget_ArtBarbershop_PrimaryButton"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_8"
+            android:text="Login"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linkForgotPassword" />
+
+        <LinearLayout
+            android:id="@+id/registerPrompt"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginTop="@dimen/space_12"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/buttonLogin">
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Don't have an account? " />
+
+            <TextView
+                android:id="@+id/linkCreateAccount"
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="Create account"
+                android:textColor="@color/color_primary"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

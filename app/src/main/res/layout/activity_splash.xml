@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/splashRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".SplashActivity">
+
+    <LinearLayout
+        android:id="@+id/splashBrandGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/imageLogo"
+            android:layout_width="@dimen/brand_logo_size"
+            android:layout_height="@dimen/brand_logo_size"
+            android:contentDescription="Art Barbershop logo"
+            android:src="@drawable/ic_barber_pole" />
+
+        <TextView
+            android:id="@+id/textAppName"
+            style="@style/TextAppearance_ArtBarbershop_Display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_24"
+            android:gravity="center"
+            android:text="Art Barbershop"
+            android:textColor="@color/color_text_primary" />
+
+        <View
+            android:id="@+id/viewGoldDivider"
+            android:layout_width="@dimen/title_divider_width"
+            android:layout_height="@dimen/title_divider_height"
+            android:layout_marginTop="@dimen/space_8"
+            android:background="@drawable/bg_title_gold_divider" />
+
+        <TextView
+            android:id="@+id/textTagline"
+            style="@style/TextAppearance_ArtBarbershop_Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_16"
+            android:gravity="center"
+            android:text="Crafting confidence, artfully."
+            android:textColor="@color/color_text_secondary" />
+    </LinearLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressLoading"
+        android:layout_width="@dimen/qr_code_size"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_48"
+        android:indeterminate="true"
+        app:indicatorColor="@color/color_primary"
+        app:layout_constraintBottom_toTopOf="@id/textLoading"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:trackColor="@color/color_border"
+        app:trackCornerRadius="@dimen/radius_pill"
+        app:trackThickness="@dimen/space_4" />
+
+    <TextView
+        android:id="@+id/textLoading"
+        style="@style/TextAppearance_ArtBarbershop_Caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_40"
+        android:text="Loading your best look..."
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

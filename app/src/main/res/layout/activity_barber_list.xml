@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/barberListRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".BarberListActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/barberTopBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_16"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="@drawable/bg_icon_button"
+            android:contentDescription="@string/action_back"
+            android:padding="@dimen/space_12"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textBarberTitle"
+            style="@style/TextAppearance_ArtBarbershop_ScreenTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/screen_barbers_title"
+            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/buttonBack" />
+
+        <ImageButton
+            android:id="@+id/buttonNotifications"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="@drawable/bg_icon_button"
+            android:contentDescription="@string/action_notifications"
+            android:padding="@dimen/space_12"
+            android:src="@drawable/ic_bell"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <FrameLayout
+            android:id="@+id/barberTitleDivider"
+            android:layout_width="@dimen/title_divider_width"
+            android:layout_height="@dimen/space_12"
+            app:layout_constraintEnd_toEndOf="@id/textBarberTitle"
+            app:layout_constraintStart_toStartOf="@id/textBarberTitle"
+            app:layout_constraintTop_toBottomOf="@id/textBarberTitle">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/title_divider_height"
+                android:layout_gravity="center"
+                android:background="@color/color_accent_light" />
+
+            <View
+                android:layout_width="@dimen/title_divider_dot_size"
+                android:layout_height="@dimen/title_divider_dot_size"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_title_gold_divider" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/searchBarbersBar"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/input_height"
+        android:layout_marginStart="@dimen/screen_horizontal_padding"
+        android:layout_marginTop="@dimen/space_12"
+        android:layout_marginEnd="@dimen/screen_horizontal_padding"
+        android:background="@drawable/bg_search_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barberTopBar">
+
+        <ImageView
+            android:layout_width="@dimen/space_24"
+            android:layout_height="@dimen/space_24"
+            android:contentDescription="@string/action_search_barbers"
+            android:src="@drawable/ic_search" />
+
+        <EditText
+            android:id="@+id/editTextSearchBarbers"
+            style="@style/TextAppearance_ArtBarbershop_Body"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/space_10"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="@string/hint_search_barbers"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textColor="@color/color_text_primary"
+            android:textColorHint="@color/color_text_muted" />
+
+        <ImageView
+            android:layout_width="@dimen/space_24"
+            android:layout_height="@dimen/space_24"
+            android:contentDescription="@string/action_filter"
+            android:src="@drawable/ic_tune" />
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/barberFilterScroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_10"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchBarbersBar">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/chipTopRated"
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_marginEnd="@dimen/space_8"
+                android:background="@drawable/bg_chip_selected"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minWidth="@dimen/touch_target_min"
+                android:paddingStart="@dimen/space_14"
+                android:paddingEnd="@dimen/space_14"
+                android:text="@string/filter_top_rated"
+                android:textColor="@color/color_text_inverse"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/chipAvailable"
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_marginEnd="@dimen/space_8"
+                android:background="@drawable/bg_chip_unselected"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minWidth="@dimen/touch_target_min"
+                android:paddingStart="@dimen/space_14"
+                android:paddingEnd="@dimen/space_14"
+                android:text="@string/filter_available" />
+
+            <TextView
+                android:id="@+id/chipFade"
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_marginEnd="@dimen/space_8"
+                android:background="@drawable/bg_chip_unselected"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minWidth="@dimen/touch_target_min"
+                android:paddingStart="@dimen/space_14"
+                android:paddingEnd="@dimen/space_14"
+                android:text="@string/filter_fade" />
+
+            <TextView
+                android:id="@+id/chipColoring"
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/touch_target_min"
+                android:background="@drawable/bg_chip_unselected"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minWidth="@dimen/touch_target_min"
+                android:paddingStart="@dimen/space_14"
+                android:paddingEnd="@dimen/space_14"
+                android:text="@string/filter_coloring" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <FrameLayout
+        android:id="@+id/barberContentFrame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/screen_horizontal_padding"
+        android:layout_marginTop="@dimen/space_8"
+        android:layout_marginEnd="@dimen/screen_horizontal_padding"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barberFilterScroll">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerBarbers"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="@dimen/space_4"
+            android:paddingBottom="@dimen/space_20"
+            tools:listitem="@layout/item_barber" />
+
+        <LinearLayout
+            android:id="@+id/layoutBarbersLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_8"
+                android:text="@string/state_loading" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutBarbersEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/barbers_empty_title" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:text="@string/barbers_empty_message" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/layoutBarbersError"
+            style="@style/TextAppearance_ArtBarbershop_Body"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/state_error_placeholder"
+            android:visibility="gone" />
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

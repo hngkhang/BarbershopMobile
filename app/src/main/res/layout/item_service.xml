@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget_ArtBarbershop_Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_10"
+    app:cardUseCompatPadding="false">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/service_card_min_height"
+        android:padding="@dimen/space_12">
+
+        <FrameLayout
+            android:id="@+id/imageServiceContainer"
+            android:layout_width="@dimen/service_image_size"
+            android:layout_height="@dimen/service_image_size"
+            android:background="@drawable/bg_service_tile_haircut"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UselessParent">
+
+            <ImageView
+                android:id="@+id/imageServiceIcon"
+                android:layout_width="@dimen/space_40"
+                android:layout_height="@dimen/space_40"
+                android:layout_gravity="center"
+                android:contentDescription="@string/action_search_services"
+                android:src="@drawable/ic_scissors" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/textServiceName"
+            style="@style/TextAppearance_ArtBarbershop_CardTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_14"
+            android:layout_marginEnd="@dimen/space_8"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toStartOf="@id/buttonBookNow"
+            app:layout_constraintStart_toEndOf="@id/imageServiceContainer"
+            app:layout_constraintTop_toTopOf="@id/imageServiceContainer"
+            tools:text="Haircut" />
+
+        <TextView
+            android:id="@+id/textServiceDescription"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_14"
+            android:layout_marginTop="@dimen/space_4"
+            android:layout_marginEnd="@dimen/space_8"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/color_text_secondary"
+            app:layout_constraintEnd_toStartOf="@id/buttonBookNow"
+            app:layout_constraintStart_toEndOf="@id/imageServiceContainer"
+            app:layout_constraintTop_toBottomOf="@id/textServiceName"
+            tools:text="Classic cut tailored to your style with precision and care." />
+
+        <TextView
+            android:id="@+id/textServiceDuration"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_14"
+            android:layout_marginTop="@dimen/space_8"
+            android:textColor="@color/color_text_primary"
+            app:layout_constraintStart_toEndOf="@id/imageServiceContainer"
+            app:layout_constraintTop_toBottomOf="@id/textServiceDescription"
+            tools:text="30 min" />
+
+        <View
+            android:id="@+id/serviceMetaDot"
+            android:layout_width="@dimen/space_4"
+            android:layout_height="@dimen/space_4"
+            android:layout_marginStart="@dimen/space_8"
+            android:background="@drawable/bg_title_gold_divider"
+            app:layout_constraintBottom_toBottomOf="@id/textServiceDuration"
+            app:layout_constraintStart_toEndOf="@id/textServiceDuration"
+            app:layout_constraintTop_toTopOf="@id/textServiceDuration" />
+
+        <TextView
+            android:id="@+id/textServicePrice"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_8"
+            android:layout_marginEnd="@dimen/space_8"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/color_text_primary"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/buttonBookNow"
+            app:layout_constraintStart_toEndOf="@id/serviceMetaDot"
+            app:layout_constraintTop_toTopOf="@id/textServiceDuration"
+            tools:text="$25.00" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonBookNow"
+            style="@style/Widget_ArtBarbershop_PrimaryButton"
+            android:layout_width="@dimen/service_action_button_width"
+            android:layout_height="@dimen/button_height_small"
+            android:minWidth="@dimen/touch_target_min"
+            android:minHeight="@dimen/touch_target_min"
+            android:paddingStart="@dimen/space_8"
+            android:paddingEnd="@dimen/space_8"
+            android:text="@string/action_book_now"
+            android:textSize="@dimen/text_caption"
+            app:layout_constraintBottom_toBottomOf="@id/imageServiceContainer"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

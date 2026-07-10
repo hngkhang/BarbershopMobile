@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/aiChatRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".AIChatBookingActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/aiChatTopBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_16"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="@drawable/bg_icon_button"
+            android:contentDescription="@string/action_back"
+            android:padding="@dimen/space_12"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textAiChatTitle"
+            style="@style/TextAppearance_ArtBarbershop_CardTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="@string/screen_ai_chat_booking_title"
+            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+            app:layout_constraintEnd_toStartOf="@id/buttonMore"
+            app:layout_constraintStart_toEndOf="@id/buttonBack"
+            app:layout_constraintTop_toTopOf="@id/buttonBack" />
+
+        <ImageButton
+            android:id="@+id/buttonMore"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="@drawable/bg_icon_button"
+            android:contentDescription="@string/action_more_options"
+            android:padding="@dimen/space_12"
+            android:src="@drawable/ic_more_horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/aiAssistantHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_10"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        android:paddingBottom="@dimen/space_10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/aiChatTopBar">
+
+        <FrameLayout
+            android:layout_width="@dimen/chat_avatar_size"
+            android:layout_height="@dimen/chat_avatar_size"
+            android:background="@drawable/bg_ai_booking_circle">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:layout_gravity="center"
+                android:contentDescription="@string/ai_assistant_name"
+                android:src="@drawable/ic_robot" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_12"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ai_assistant_name"
+                android:textColor="@color/color_text_primary"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="@dimen/space_6"
+                    android:layout_height="@dimen/space_6"
+                    android:background="@drawable/bg_online_dot" />
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_6"
+                    android:text="@string/ai_assistant_online"
+                    android:textColor="@color/color_success" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/aiHeaderDivider"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/stroke_thin"
+        android:background="@color/color_divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/aiAssistantHeader" />
+
+    <ScrollView
+        android:id="@+id/aiChatScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="false"
+        android:paddingBottom="@dimen/space_12"
+        app:layout_constraintBottom_toTopOf="@id/aiChatComposer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/aiHeaderDivider">
+
+        <LinearLayout
+            android:id="@+id/aiChatContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerChatMessages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="3"
+                tools:listitem="@layout/item_chat_ai" />
+
+            <LinearLayout
+                android:id="@+id/layoutAiSuggestions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_horizontal_padding"
+                android:paddingTop="@dimen/space_12"
+                android:paddingEnd="@dimen/screen_horizontal_padding">
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ai_section_service_suggestions"
+                    android:textColor="@color/color_text_primary"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerServiceSuggestions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_8"
+                    android:nestedScrollingEnabled="false"
+                    android:orientation="horizontal"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_service_suggestion" />
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_16"
+                    android:text="@string/ai_section_preferred_barber"
+                    android:textColor="@color/color_text_primary"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerBarberSuggestions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_8"
+                    android:nestedScrollingEnabled="false"
+                    android:orientation="horizontal"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_barber_suggestion" />
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_16"
+                    android:text="@string/ai_section_available_times"
+                    android:textColor="@color/color_text_primary"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_8"
+                    android:clipToPadding="false"
+                    android:overScrollMode="never"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/layoutTimeChips"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/chipTime1200"
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/touch_target_min"
+                            android:layout_marginEnd="@dimen/space_8"
+                            android:background="@drawable/bg_chip_unselected"
+                            android:gravity="center"
+                            android:minWidth="@dimen/booking_time_slot_width"
+                            android:text="@string/time_slot_1200"
+                            android:textColor="@color/color_text_primary" />
+
+                        <TextView
+                            android:id="@+id/chipTime1300"
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/touch_target_min"
+                            android:layout_marginEnd="@dimen/space_8"
+                            android:background="@drawable/bg_chip_unselected"
+                            android:gravity="center"
+                            android:minWidth="@dimen/booking_time_slot_width"
+                            android:text="@string/time_slot_1300"
+                            android:textColor="@color/color_text_primary" />
+
+                        <TextView
+                            android:id="@+id/chipTime1400"
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/touch_target_min"
+                            android:layout_marginEnd="@dimen/space_8"
+                            android:background="@drawable/bg_chip_selected"
+                            android:gravity="center"
+                            android:minWidth="@dimen/booking_time_slot_width"
+                            android:text="@string/time_slot_1400"
+                            android:textColor="@color/color_text_inverse"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/chipTime1500"
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/touch_target_min"
+                            android:layout_marginEnd="@dimen/space_8"
+                            android:background="@drawable/bg_chip_unselected"
+                            android:gravity="center"
+                            android:minWidth="@dimen/booking_time_slot_width"
+                            android:text="@string/time_slot_1500"
+                            android:textColor="@color/color_text_primary" />
+
+                        <TextView
+                            android:id="@+id/chipTime1600"
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/touch_target_min"
+                            android:background="@drawable/bg_chip_unselected"
+                            android:gravity="center"
+                            android:minWidth="@dimen/booking_time_slot_width"
+                            android:text="@string/time_slot_1600"
+                            android:textColor="@color/color_text_primary" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/aiChatComposer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_10"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        android:paddingBottom="@dimen/space_10"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ai_chat_try_asking"
+            android:textColor="@color/color_text_primary"
+            android:textStyle="bold" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_6"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/chipPromptHaircut"
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:layout_marginEnd="@dimen/space_8"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:gravity="center"
+                    android:text="@string/ai_prompt_book_haircut"
+                    android:textColor="@color/color_primary" />
+
+                <TextView
+                    android:id="@+id/chipPromptTomorrow"
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:layout_marginEnd="@dimen/space_8"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:gravity="center"
+                    android:text="@string/ai_prompt_tomorrow"
+                    android:textColor="@color/color_primary" />
+
+                <TextView
+                    android:id="@+id/chipPromptBarber"
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:gravity="center"
+                    android:text="@string/ai_prompt_barber"
+                    android:textColor="@color/color_primary" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_8"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/editMessage"
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/input_height"
+                android:layout_marginEnd="@dimen/space_8"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input_rounded"
+                android:hint="@string/ai_chat_placeholder"
+                android:imeOptions="actionSend"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="3"
+                android:minHeight="@dimen/touch_target_min"
+                android:paddingStart="@dimen/space_16"
+                android:paddingEnd="@dimen/space_16"
+                android:textColor="@color/color_text_primary"
+                android:textColorHint="@color/color_text_muted" />
+
+            <ImageButton
+                android:id="@+id/buttonSend"
+                android:layout_width="@dimen/send_button_size"
+                android:layout_height="@dimen/send_button_size"
+                android:background="@drawable/bg_send_button_circle"
+                android:contentDescription="@string/action_send_message"
+                android:padding="@dimen/space_12"
+                android:src="@drawable/ic_send" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_8"
+            android:gravity="center"
+            android:text="@string/ai_chat_disclaimer" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

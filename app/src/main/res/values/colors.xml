@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base compatibility colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Art Barbershop palette -->
+    <color name="color_bg">#FAF8F4</color>
+    <color name="color_surface">#FFFFFFFF</color>
+    <color name="color_surface_soft">#F6FBFC</color>
+    <color name="color_surface_warm">#FFF9EF</color>
+
+    <color name="color_primary">#087F95</color>
+    <color name="color_primary_dark">#055D70</color>
+    <color name="color_primary_light">#E8F8FA</color>
+    <color name="color_primary_disabled">#9ED8E0</color>
+
+    <color name="color_text_primary">#111827</color>
+    <color name="color_text_secondary">#687384</color>
+    <color name="color_text_muted">#9AA3AF</color>
+    <color name="color_text_inverse">#FFFFFFFF</color>
+
+    <color name="color_accent">#C89B3C</color>
+    <color name="color_accent_light">#F3E2B8</color>
+    <color name="color_accent_soft">#FFF4D8</color>
+
+    <color name="color_border">#E5EAF0</color>
+    <color name="color_border_strong">#CDD6E0</color>
+    <color name="color_divider">#EEF1F4</color>
+
+    <color name="color_success">#1E8E3E</color>
+    <color name="color_success_bg">#E8F7EC</color>
+    <color name="color_warning">#D99000</color>
+    <color name="color_warning_bg">#FFF3D7</color>
+    <color name="color_error">#D32F2F</color>
+    <color name="color_error_bg">#FDECEC</color>
+    <color name="color_neutral">#6B7280</color>
+    <color name="color_neutral_bg">#F1F3F6</color>
+
+    <color name="color_payment_paid">#1E8E3E</color>
+    <color name="color_payment_paid_bg">#E8F7EC</color>
+    <color name="color_payment_unpaid">#F59E0B</color>
+    <color name="color_payment_unpaid_bg">#FFF3D7</color>
+
+    <color name="color_shadow">#1F2937</color>
+
+    <!-- Home/service accent surfaces -->
+    <color name="color_service_haircut_bg">#EAF7FA</color>
+    <color name="color_service_shampoo_bg">#EAF7ED</color>
+    <color name="color_service_perm_bg">#F2ECFF</color>
+    <color name="color_service_coloring_bg">#FDECEE</color>
+    <color name="color_service_combo_bg">#FFF3D7</color>
+</resources>

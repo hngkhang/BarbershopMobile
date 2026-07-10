@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget_ArtBarbershop_Card"
+    android:layout_width="@dimen/chat_barber_card_width"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/space_8"
+    android:minHeight="@dimen/chat_barber_card_min_height"
+    app:cardUseCompatPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/space_8">
+
+        <TextView
+            android:id="@+id/textBarberSuggestionInitial"
+            style="@style/TextAppearance_ArtBarbershop_CardTitle"
+            android:layout_width="@dimen/chat_suggestion_icon_size"
+            android:layout_height="@dimen/chat_suggestion_icon_size"
+            android:background="@drawable/bg_avatar_circle"
+            android:contentDescription="@string/ai_barber_suggestion_avatar"
+            android:gravity="center"
+            android:textColor="@color/color_primary"
+            tools:text="M" />
+
+        <TextView
+            android:id="@+id/textBarberSuggestionName"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_8"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/color_text_primary"
+            android:textStyle="bold"
+            tools:text="Michael" />
+
+        <TextView
+            android:id="@+id/textBarberSuggestionExperience"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            tools:text="9+ yrs exp." />
+
+        <TextView
+            android:id="@+id/textBarberSuggestionRating"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/color_accent"
+            android:textStyle="bold"
+            tools:text="4.9" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profileRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".ProfileActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/profileTopBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingTop="@dimen/space_16"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="@drawable/bg_icon_button"
+            android:contentDescription="@string/action_back"
+            android:padding="@dimen/space_12"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textProfileTitle"
+            style="@style/TextAppearance_ArtBarbershop_ScreenTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="@string/screen_profile_title"
+            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/buttonBack"
+            app:layout_constraintTop_toTopOf="@id/buttonBack" />
+
+        <FrameLayout
+            android:id="@+id/profileTitleDivider"
+            android:layout_width="@dimen/title_divider_width"
+            android:layout_height="@dimen/space_12"
+            app:layout_constraintEnd_toEndOf="@id/textProfileTitle"
+            app:layout_constraintStart_toStartOf="@id/textProfileTitle"
+            app:layout_constraintTop_toBottomOf="@id/textProfileTitle">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/title_divider_height"
+                android:layout_gravity="center"
+                android:background="@color/color_accent_light" />
+
+            <View
+                android:layout_width="@dimen/title_divider_dot_size"
+                android:layout_height="@dimen/title_divider_dot_size"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_title_gold_divider" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:id="@+id/profileScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/screen_horizontal_padding"
+        android:paddingEnd="@dimen/screen_horizontal_padding"
+        android:paddingBottom="@dimen/space_20"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/profileTopBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget_ArtBarbershop_Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_12"
+                app:cardUseCompatPadding="false">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/space_16">
+
+                    <TextView
+                        android:id="@+id/textProfileAvatar"
+                        style="@style/TextAppearance_ArtBarbershop_SectionTitle"
+                        android:layout_width="@dimen/avatar_size_large"
+                        android:layout_height="@dimen/avatar_size_large"
+                        android:background="@drawable/bg_avatar_circle"
+                        android:contentDescription="@string/nav_profile"
+                        android:gravity="center"
+                        android:textColor="@color/color_primary"
+                        tools:text="A" />
+
+                    <TextView
+                        android:id="@+id/textProfileName"
+                        style="@style/TextAppearance_ArtBarbershop_SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_16"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/textProfileAvatar"
+                        app:layout_constraintTop_toTopOf="@id/textProfileAvatar"
+                        tools:text="Alex Johnson" />
+
+                    <TextView
+                        android:id="@+id/textProfileEmail"
+                        style="@style/TextAppearance_ArtBarbershop_Body"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_16"
+                        android:layout_marginTop="@dimen/space_4"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/textProfileAvatar"
+                        app:layout_constraintTop_toBottomOf="@id/textProfileName"
+                        tools:text="hello@artbarbershop.com" />
+
+                    <TextView
+                        android:id="@+id/textProfilePhone"
+                        style="@style/TextAppearance_ArtBarbershop_Body"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_16"
+                        android:layout_marginTop="@dimen/space_4"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/textProfileAvatar"
+                        app:layout_constraintTop_toBottomOf="@id/textProfileEmail"
+                        tools:text="+1 123 456 7890" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/buttonEditProfile"
+                        style="@style/Widget_ArtBarbershop_SecondaryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/button_height_small"
+                        android:layout_marginTop="@dimen/space_12"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:text="@string/profile_edit"
+                        android:textSize="@dimen/text_caption"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/textProfilePhone" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget_ArtBarbershop_Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_12"
+                app:cardUseCompatPadding="false">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerProfileMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="7"
+                    tools:listitem="@layout/item_profile_menu" />
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/bottom_nav_height"
+        android:background="@drawable/bg_bottom_nav_surface"
+        android:elevation="@dimen/card_elevation_pressed"
+        android:paddingStart="@dimen/space_4"
+        android:paddingEnd="@dimen/space_4"
+        app:itemActiveIndicatorStyle="@null"
+        app:itemHorizontalTranslationEnabled="false"
+        app:itemIconTint="@color/bottom_nav_item_tint"
+        app:itemTextAppearanceActive="@style/TextAppearance_ArtBarbershop_Caption"
+        app:itemTextAppearanceInactive="@style/TextAppearance_ArtBarbershop_Caption"
+        app:itemTextColor="@color/bottom_nav_item_tint"
+        app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+
+    <LinearLayout
+        android:id="@+id/buttonAiBooking"
+        android:layout_width="@dimen/ai_booking_button_size"
+        android:layout_height="@dimen/ai_booking_button_size"
+        android:background="@drawable/bg_ai_booking_circle"
+        android:clickable="true"
+        android:contentDescription="@string/nav_ai_booking"
+        android:elevation="@dimen/space_8"
+        android:focusable="true"
+        android:gravity="center"
+        android:minWidth="@dimen/touch_target_min"
+        android:minHeight="@dimen/touch_target_min"
+        android:orientation="vertical"
+        android:padding="@dimen/space_8"
+        app:layout_constraintBottom_toBottomOf="@id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="@id/bottomNavigationView"
+        app:layout_constraintStart_toStartOf="@id/bottomNavigationView"
+        app:layout_constraintTop_toTopOf="@id/bottomNavigationView"
+        tools:ignore="KeyboardInaccessibleWidget">
+
+        <ImageView
+            android:layout_width="@dimen/space_20"
+            android:layout_height="@dimen/space_20"
+            android:contentDescription="@string/nav_ai_booking_icon"
+            android:src="@drawable/ic_sparkle" />
+
+        <TextView
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:gravity="center"
+            android:text="@string/nav_ai_short"
+            android:textColor="@color/color_text_inverse"
+            android:textSize="@dimen/text_badge"
+            android:textStyle="bold" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

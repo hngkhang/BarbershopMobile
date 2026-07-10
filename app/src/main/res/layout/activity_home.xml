@@ -1,0 +1,783 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/homeRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".HomeActivity">
+
+    <ScrollView
+        android:id="@+id/homeScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingBottom="@dimen/space_16"
+        app:layout_constraintBottom_toTopOf="@id/homeBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_horizontal_padding"
+            android:paddingTop="@dimen/space_24"
+            android:paddingEnd="@dimen/screen_horizontal_padding"
+            android:paddingBottom="@dimen/space_24">
+
+            <LinearLayout
+                android:id="@+id/homeHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:contentDescription="User avatar placeholder">
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="A"
+                        android:textColor="@color/color_primary" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_12"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hello, Alex" />
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:text="Ready for a fresh look?" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/buttonNotifications"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="@drawable/bg_icon_button"
+                    android:contentDescription="Notifications"
+                    android:padding="@dimen/space_12"
+                    android:src="@drawable/ic_bell" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/searchBar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/input_height"
+                android:layout_marginTop="@dimen/space_16"
+                android:background="@drawable/bg_search_bar"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/space_24"
+                    android:layout_height="@dimen/space_24"
+                    android:contentDescription="Search"
+                    android:src="@drawable/ic_search" />
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_Body"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_10"
+                    android:layout_weight="1"
+                    android:text="Search services, barbers..."
+                    android:textColor="@color/color_text_muted" />
+
+                <ImageView
+                    android:layout_width="@dimen/space_24"
+                    android:layout_height="@dimen/space_24"
+                    android:contentDescription="Filter"
+                    android:src="@drawable/ic_tune" />
+            </LinearLayout>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardAiBooking"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/home_hero_height"
+                android:layout_marginTop="@dimen/space_16"
+                android:backgroundTint="@color/color_primary"
+                app:cardCornerRadius="@dimen/radius_large"
+                app:cardElevation="@dimen/card_elevation">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_home_hero"
+                    android:padding="@dimen/space_16">
+
+                    <TextView
+                        android:id="@+id/textAiTitle"
+                        style="@style/TextAppearance_ArtBarbershop_SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Book with AI"
+                        android:textColor="@color/color_text_inverse"
+                        app:layout_constraintEnd_toStartOf="@id/imageAiRobot"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textAiSubtitle"
+                        style="@style/TextAppearance_ArtBarbershop_Caption"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="Get personalized style recommendations and book in seconds."
+                        android:textColor="@color/color_text_inverse"
+                        app:layout_constraintEnd_toStartOf="@id/imageAiRobot"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/textAiTitle" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/buttonTryAi"
+                        style="@style/Widget_ArtBarbershop_SecondaryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/button_height_small"
+                        android:layout_marginTop="@dimen/space_12"
+                        android:minWidth="@dimen/touch_target_min"
+                        android:text="Try AI Booking"
+                        android:textColor="@color/color_primary"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/textAiSubtitle" />
+
+                    <ImageView
+                        android:id="@+id/imageAiRobot"
+                        android:layout_width="@dimen/avatar_size_large"
+                        android:layout_height="@dimen/avatar_size_large"
+                        android:contentDescription="AI booking assistant"
+                        android:src="@drawable/ic_robot"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_18"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Upcoming Appointment" />
+
+                <TextView
+                    android:id="@+id/textViewAllAppointments"
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:gravity="center"
+                    android:text="View all"
+                    android:textColor="@color/color_primary" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardUpcomingAppointment"
+                style="@style/Widget_ArtBarbershop_Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardUseCompatPadding="false">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_14">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/touch_target_min"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:background="@drawable/bg_service_tile_haircut">
+
+                        <ImageView
+                            android:layout_width="@dimen/space_24"
+                            android:layout_height="@dimen/space_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="Appointment date"
+                            android:src="@drawable/ic_calendar" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_12"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sat, May 24 - 11:00 AM"
+                            android:textColor="@color/color_primary"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2"
+                            android:text="Classic Haircut"
+                            android:textSize="@dimen/text_body" />
+
+                        <TextView
+                            style="@style/TextAppearance_ArtBarbershop_Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="with Michael" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_Badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/badge_min_height"
+                        android:background="@drawable/bg_badge_status_upcoming"
+                        android:gravity="center"
+                        android:paddingStart="@dimen/space_10"
+                        android:paddingEnd="@dimen/space_10"
+                        android:text="Confirmed"
+                        android:textColor="@color/color_success" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_18"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Popular Services" />
+
+                <TextView
+                    android:id="@+id/textViewAllServices"
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:gravity="center"
+                    android:text="View all"
+                    android:textColor="@color/color_primary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/serviceRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:weightSum="5">
+
+                <LinearLayout
+                    android:id="@+id/serviceHaircut"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/touch_target_min"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:background="@drawable/bg_service_tile_haircut">
+
+                        <ImageView
+                            android:layout_width="@dimen/space_24"
+                            android:layout_height="@dimen/space_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="Haircut"
+                            android:src="@drawable/ic_scissors" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="Haircut" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/serviceShampoo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/touch_target_min"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:background="@drawable/bg_service_tile_shampoo">
+
+                        <ImageView
+                            android:layout_width="@dimen/space_24"
+                            android:layout_height="@dimen/space_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="Shampoo"
+                            android:src="@drawable/ic_barber_pole" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="Shampoo" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/servicePerm"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/touch_target_min"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:background="@drawable/bg_service_tile_perm">
+
+                        <ImageView
+                            android:layout_width="@dimen/space_24"
+                            android:layout_height="@dimen/space_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="Perm"
+                            android:src="@drawable/ic_sparkle"
+                            app:tint="@color/color_primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="Perm" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/serviceColoring"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/touch_target_min"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:background="@drawable/bg_service_tile_coloring">
+
+                        <ImageView
+                            android:layout_width="@dimen/space_24"
+                            android:layout_height="@dimen/space_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="Coloring"
+                            android:src="@drawable/ic_sparkle"
+                            app:tint="@color/color_error" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="Coloring" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/serviceCombo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/touch_target_min"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:background="@drawable/bg_service_tile_combo">
+
+                        <ImageView
+                            android:layout_width="@dimen/space_24"
+                            android:layout_height="@dimen/space_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="Combo"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="@color/color_warning" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/TextAppearance_ArtBarbershop_Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="Combo" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_18"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Featured Barbers" />
+
+                <TextView
+                    android:id="@+id/textViewAllBarbers"
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:gravity="center"
+                    android:text="View all"
+                    android:textColor="@color/color_primary" />
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardFeaturedMichael"
+                        style="@style/Widget_ArtBarbershop_Card"
+                        android:layout_width="@dimen/featured_barber_card_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/space_10">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="@dimen/space_12">
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                                android:layout_width="@dimen/avatar_size"
+                                android:layout_height="@dimen/avatar_size"
+                                android:background="@drawable/bg_avatar_circle"
+                                android:gravity="center"
+                                android:text="M"
+                                android:textColor="@color/color_primary" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_8"
+                                android:text="Michael"
+                                android:textSize="@dimen/text_body" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Fade Specialist" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="4.9"
+                                android:textColor="@color/color_warning" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardFeaturedDavid"
+                        style="@style/Widget_ArtBarbershop_Card"
+                        android:layout_width="@dimen/featured_barber_card_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/space_10">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="@dimen/space_12">
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                                android:layout_width="@dimen/avatar_size"
+                                android:layout_height="@dimen/avatar_size"
+                                android:background="@drawable/bg_avatar_circle"
+                                android:gravity="center"
+                                android:text="D"
+                                android:textColor="@color/color_primary" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_8"
+                                android:text="David"
+                                android:textSize="@dimen/text_body" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Styling Expert" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="4.8"
+                                android:textColor="@color/color_warning" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardFeaturedJames"
+                        style="@style/Widget_ArtBarbershop_Card"
+                        android:layout_width="@dimen/featured_barber_card_width"
+                        android:layout_height="wrap_content">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="@dimen/space_12">
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                                android:layout_width="@dimen/avatar_size"
+                                android:layout_height="@dimen/avatar_size"
+                                android:background="@drawable/bg_avatar_circle"
+                                android:gravity="center"
+                                android:text="J"
+                                android:textColor="@color/color_primary" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_8"
+                                android:text="James"
+                                android:textSize="@dimen/text_body" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Beard Expert" />
+
+                            <TextView
+                                style="@style/TextAppearance_ArtBarbershop_Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="4.9"
+                                android:textColor="@color/color_warning" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/homeBottomNav"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/bottom_nav_height"
+        android:background="@color/color_surface"
+        android:elevation="@dimen/card_elevation_pressed"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_8"
+        android:paddingEnd="@dimen/space_8"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/homeNavHome"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="Home"
+                android:src="@drawable/ic_home" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textColor="@color/color_primary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/homeNavServices"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="Services"
+                android:src="@drawable/ic_grid" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Services" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/homeNavAi"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:foregroundGravity="center">
+
+            <LinearLayout
+                android:layout_width="@dimen/ai_booking_button_size"
+                android:layout_height="@dimen/ai_booking_button_size"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_ai_booking_circle"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/space_20"
+                    android:layout_height="@dimen/space_20"
+                    android:contentDescription="AI Booking"
+                    android:src="@drawable/ic_sparkle" />
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:text="AI"
+                    android:textColor="@color/color_text_inverse"
+                    android:textSize="@dimen/text_badge" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/homeNavAppointments"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="Appointments"
+                android:src="@drawable/ic_calendar"
+                app:tint="@color/color_text_secondary" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Appointments" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/homeNavProfile"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="Profile"
+                android:src="@drawable/ic_person" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

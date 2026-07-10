@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget_ArtBarbershop_Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_10"
+    app:cardUseCompatPadding="false">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/barber_card_min_height"
+        android:padding="@dimen/space_12">
+
+        <TextView
+            android:id="@+id/textBarberInitial"
+            style="@style/TextAppearance_ArtBarbershop_CardTitle"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:background="@drawable/bg_avatar_circle"
+            android:gravity="center"
+            android:textColor="@color/color_primary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="M" />
+
+        <TextView
+            android:id="@+id/textBarberName"
+            style="@style/TextAppearance_ArtBarbershop_CardTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_14"
+            android:layout_marginEnd="@dimen/space_8"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintEnd_toStartOf="@id/textBarberStatus"
+            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
+            app:layout_constraintTop_toTopOf="@id/textBarberInitial"
+            tools:text="Michael" />
+
+        <TextView
+            android:id="@+id/textBarberStatus"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_success"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textBarberName"
+            tools:text="Available Today" />
+
+        <TextView
+            android:id="@+id/textBarberExperience"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_14"
+            android:layout_marginTop="@dimen/space_4"
+            android:layout_marginEnd="@dimen/space_8"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/color_text_secondary"
+            app:layout_constraintEnd_toStartOf="@id/textBarberAvailableTime"
+            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
+            app:layout_constraintTop_toBottomOf="@id/textBarberName"
+            tools:text="8 years experience" />
+
+        <TextView
+            android:id="@+id/textBarberAvailableTime"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_text_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textBarberExperience"
+            tools:text="9:00 AM - 7:00 PM" />
+
+        <TextView
+            android:id="@+id/textBarberSpecialty"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_14"
+            android:layout_marginTop="@dimen/space_4"
+            android:layout_marginEnd="@dimen/space_8"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/color_text_secondary"
+            app:layout_constraintEnd_toStartOf="@id/buttonBarberAction"
+            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
+            app:layout_constraintTop_toBottomOf="@id/textBarberExperience"
+            tools:text="Specialty: Fade, Classic Cut" />
+
+        <ImageView
+            android:id="@+id/imageRatingStar"
+            android:layout_width="@dimen/space_16"
+            android:layout_height="@dimen/space_16"
+            android:layout_marginStart="@dimen/space_14"
+            android:layout_marginTop="@dimen/space_10"
+            android:contentDescription="@string/filter_top_rated"
+            android:src="@drawable/ic_star"
+            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
+            app:layout_constraintTop_toBottomOf="@id/textBarberSpecialty" />
+
+        <TextView
+            android:id="@+id/textBarberRating"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_4"
+            android:layout_marginEnd="@dimen/space_8"
+            android:textColor="@color/color_text_primary"
+            app:layout_constraintBottom_toBottomOf="@id/imageRatingStar"
+            app:layout_constraintEnd_toStartOf="@id/buttonBarberAction"
+            app:layout_constraintStart_toEndOf="@id/imageRatingStar"
+            app:layout_constraintTop_toTopOf="@id/imageRatingStar"
+            tools:text="4.9 (320)" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonBarberAction"
+            style="@style/Widget_ArtBarbershop_PrimaryButton"
+            android:layout_width="@dimen/list_action_button_width"
+            android:layout_height="@dimen/button_height_small"
+            android:minWidth="@dimen/touch_target_min"
+            android:minHeight="@dimen/touch_target_min"
+            android:paddingStart="@dimen/space_8"
+            android:paddingEnd="@dimen/space_8"
+            android:text="@string/action_select"
+            android:textSize="@dimen/text_caption"
+            app:layout_constraintBottom_toBottomOf="@id/imageRatingStar"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

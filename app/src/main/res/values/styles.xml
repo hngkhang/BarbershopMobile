@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextAppearance_ArtBarbershop_Display">
+        <item name="android:textColor">@color/color_text_primary</item>
+        <item name="android:textSize">@dimen/text_display</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance_ArtBarbershop_ScreenTitle">
+        <item name="android:textColor">@color/color_text_primary</item>
+        <item name="android:textSize">@dimen/text_screen_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance_ArtBarbershop_SectionTitle">
+        <item name="android:textColor">@color/color_text_primary</item>
+        <item name="android:textSize">@dimen/text_section_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance_ArtBarbershop_CardTitle">
+        <item name="android:textColor">@color/color_text_primary</item>
+        <item name="android:textSize">@dimen/text_card_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance_ArtBarbershop_Body">
+        <item name="android:textColor">@color/color_text_secondary</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance_ArtBarbershop_Caption">
+        <item name="android:textColor">@color/color_text_muted</item>
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance_ArtBarbershop_Badge">
+        <item name="android:textSize">@dimen/text_badge</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="Widget_ArtBarbershop_PrimaryButton">
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">@dimen/space_20</item>
+        <item name="android:paddingEnd">@dimen/space_20</item>
+        <item name="android:background">@drawable/bg_button_primary_teal</item>
+        <item name="android:textColor">@color/color_text_inverse</item>
+        <item name="android:textSize">@dimen/text_button</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="Widget_ArtBarbershop_SecondaryButton">
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">@dimen/space_20</item>
+        <item name="android:paddingEnd">@dimen/space_20</item>
+        <item name="android:background">@drawable/bg_button_secondary_outlined</item>
+        <item name="android:textColor">@color/color_primary</item>
+        <item name="android:textSize">@dimen/text_button</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="Widget_ArtBarbershop_Card">
+        <item name="cardBackgroundColor">@color/color_surface</item>
+        <item name="cardCornerRadius">@dimen/radius_medium</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="strokeColor">@color/color_border</item>
+        <item name="strokeWidth">@dimen/stroke_thin</item>
+    </style>
+
+    <style name="Widget_ArtBarbershop_TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/color_surface</item>
+        <item name="boxCornerRadiusTopStart">@dimen/radius_medium</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_medium</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_medium</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_medium</item>
+        <item name="boxStrokeColor">@color/color_border</item>
+        <item name="hintTextColor">@color/color_text_muted</item>
+        <item name="android:textColorHint">@color/color_text_muted</item>
+    </style>
+</resources>
