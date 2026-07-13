@@ -4,93 +4,70 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Source;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final long FIREBASE_TIMEOUT_MS = 5000L;
-    private static final long MESSAGE_DELAY_MS = 1200L;
+    private static final long SPLASH_DELAY_MS = 1200L;
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
-
-    private TextView textLoading;
-    private boolean checkFinished = false;
-    private boolean navigationScheduled = false;
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        textLoading = findViewById(R.id.textLoading);
-        checkFirebaseConnection();
+        firebaseAuth = FirebaseAuth.getInstance();
+
+        new Handler(Looper.getMainLooper())
+                .postDelayed(this::checkLoginSession, SPLASH_DELAY_MS);
     }
 
-    private void checkFirebaseConnection() {
-        textLoading.setText("Đang kiểm tra kết nối Firebase...");
+    private void checkLoginSession() {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
 
-        FirebaseApp firebaseApp = FirebaseApp.initializeApp(this);
-        if (firebaseApp == null) {
-            finishCheck("Chưa cấu hình được Firebase.");
+        if (currentUser == null) {
+            openLoginScreen();
             return;
         }
 
-        handler.postDelayed(() -> {
-            if (!checkFinished) {
-                finishCheck("Không thể kiểm tra Firebase. Vui lòng kiểm tra Internet.");
-            }
-        }, FIREBASE_TIMEOUT_MS);
+        currentUser.reload()
+                .addOnCompleteListener(task -> {
+                    FirebaseUser refreshedUser =
+                            firebaseAuth.getCurrentUser();
 
-        FirebaseFirestore.getInstance()
-                .collection("services")
-                .limit(1)
-                .get(Source.SERVER)
-                .addOnSuccessListener(result ->
-                        finishCheck("Kết nối Firebase thành công."))
-                .addOnFailureListener(exception -> {
-                    if (exception instanceof FirebaseFirestoreException
-                            && ((FirebaseFirestoreException) exception).getCode()
-                            == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                        // Firebase đã phản hồi nhưng Security Rules yêu cầu đăng nhập.
-                        finishCheck("Firebase đã kết nối. Đang chuyển đến đăng nhập...");
+                    if (task.isSuccessful()
+                            && refreshedUser != null
+                            && refreshedUser.isEmailVerified()) {
+                        openHomeScreen();
                     } else {
-                        finishCheck("Không thể kết nối Firebase. Vui lòng kiểm tra Internet.");
+                        firebaseAuth.signOut();
+                        openLoginScreen();
                     }
                 });
     }
 
-    private void finishCheck(String message) {
-        if (checkFinished) {
-            return;
-        }
-
-        checkFinished = true;
-        textLoading.setText(message);
-        openLoginActivity();
+    private void openHomeScreen() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+        startActivity(intent);
+        finish();
     }
 
-    private void openLoginActivity() {
-        if (navigationScheduled) {
-            return;
-        }
-
-        navigationScheduled = true;
-        handler.postDelayed(() -> {
-            startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-            finish();
-        }, MESSAGE_DELAY_MS);
-    }
-
-    @Override
-    protected void onDestroy() {
-        handler.removeCallbacksAndMessages(null);
-        super.onDestroy();
+    private void openLoginScreen() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+        startActivity(intent);
+        finish();
     }
 }

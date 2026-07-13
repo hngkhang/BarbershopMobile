@@ -15,8 +15,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.Arrays;
 import java.util.Locale;
 
-public class ProfileActivity extends AppCompatActivity {
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+public class ProfileActivity extends AppCompatActivity {
+    private FirebaseAuth firebaseAuth;
+    private FirebaseFirestore firestore;
     private static final String ACTION_APPOINTMENTS = "appointments";
     private static final String ACTION_LOGOUT = "logout";
     private static final String ACTION_PLACEHOLDER = "placeholder";
@@ -26,23 +31,72 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        bindTemporaryProfileData();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
+
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null || !currentUser.isEmailVerified()) {
+            firebaseAuth.signOut();
+            openLoginAndClearTask();
+            return;
+        }
+
+        bindProfileData(currentUser);
         setupProfileMenu();
         setupActions();
         setupBottomNavigation();
     }
 
-    private void bindTemporaryProfileData() {
-        String userName = "Alex Johnson";
-        String email = "hello@artbarbershop.com";
-        String phone = "+1 123 456 7890";
+    private void bindProfileData(FirebaseUser user) {
+        TextView textAvatar = findViewById(R.id.textProfileAvatar);
+        TextView textName = findViewById(R.id.textProfileName);
+        TextView textEmail = findViewById(R.id.textProfileEmail);
+        TextView textPhone = findViewById(R.id.textProfilePhone);
 
-        ((TextView) findViewById(R.id.textProfileAvatar)).setText(getInitial(userName));
-        ((TextView) findViewById(R.id.textProfileName)).setText(userName);
-        ((TextView) findViewById(R.id.textProfileEmail)).setText(email);
-        ((TextView) findViewById(R.id.textProfilePhone)).setText(phone);
-        // TODO: Replace this temporary profile data with Firebase Auth/profile data and local SQLite cache.
+        String email = user.getEmail() == null
+                ? ""
+                : user.getEmail();
+
+        String defaultName = "User";
+
+        if (email.contains("@")) {
+            defaultName = email.substring(0, email.indexOf("@"));
+        }
+
+        textAvatar.setText(getInitial(defaultName));
+        textName.setText(defaultName);
+        textEmail.setText(email);
+        textPhone.setText("Chưa cập nhật");
+
+        firestore.collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (!document.exists()) {
+                        return;
+                    }
+
+                    String name = document.getString("name");
+                    String phone = document.getString("phone");
+
+                    if (name != null && !name.trim().isEmpty()) {
+                        textName.setText(name);
+                        textAvatar.setText(getInitial(name));
+                    }
+
+                    if (phone != null && !phone.trim().isEmpty()) {
+                        textPhone.setText(phone);
+                    }
+                })
+                .addOnFailureListener(exception ->
+                        Toast.makeText(
+                                this,
+                                "Không thể tải thông tin hồ sơ",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
     }
+
 
     private void setupProfileMenu() {
         RecyclerView recyclerView = findViewById(R.id.recyclerProfileMenu);
@@ -74,14 +128,28 @@ public class ProfileActivity extends AppCompatActivity {
         if (ACTION_APPOINTMENTS.equals(item.action)) {
             launchActivityIfAvailable("AppointmentActivity");
         } else if (ACTION_LOGOUT.equals(item.action)) {
-            Toast.makeText(this, R.string.profile_logout_demo, Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finishAffinity();
+            firebaseAuth.signOut();
+
+            Toast.makeText(
+                    this,
+                    "Signed out.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            openLoginAndClearTask();
         } else {
             Toast.makeText(this, getString(R.string.profile_menu_todo, item.title), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void openLoginAndClearTask() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+        startActivity(intent);
+        finish();
     }
 
     private void setupBottomNavigation() {
