@@ -3,28 +3,53 @@ package com.example.barbershop;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.Arrays;
-import java.util.Locale;
-
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firestore;
+    private FirebaseUser currentUser;
     private static final String ACTION_APPOINTMENTS = "appointments";
     private static final String ACTION_LOGOUT = "logout";
     private static final String ACTION_PLACEHOLDER = "placeholder";
+    private TextView textAvatar;
+    private TextView textName;
+    private TextView textEmail;
+    private TextView textPhone;
+    private TextInputLayout layoutEditPhone;
+    private TextInputLayout layoutEditName;
+    private TextInputEditText inputEditPhone;
+    private TextInputEditText inputEditName;
+    private AppCompatButton buttonEditProfile;
+    private AppCompatButton buttonCancelEdit;
+    private AppCompatButton buttonSaveProfile;
+    private View layoutEditActions;
+    private String currentName = "User";
+    private String currentPhone = "";
+    private boolean edittingProfile = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,68 +58,216 @@ public class ProfileActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
+        currentUser = firebaseAuth.getCurrentUser();
 
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser == null || !currentUser.isEmailVerified()) {
             firebaseAuth.signOut();
             openLoginAndClearTask();
             return;
         }
-
+        bindViews();
+        showDefaultProfiles(currentUser);
         bindProfileData(currentUser);
         setupProfileMenu();
         setupActions();
         setupBottomNavigation();
     }
 
-    private void bindProfileData(FirebaseUser user) {
-        TextView textAvatar = findViewById(R.id.textProfileAvatar);
-        TextView textName = findViewById(R.id.textProfileName);
-        TextView textEmail = findViewById(R.id.textProfileEmail);
-        TextView textPhone = findViewById(R.id.textProfilePhone);
+    private void showDefaultProfiles(FirebaseUser currentUser) {
+        String email = currentUser.getEmail() == null ? "" : currentUser.getEmail();
+        currentName = getDefaultName(email);
+        currentPhone = "";
+        textAvatar.setText(getInitial(currentName));
+        textName.setText(currentName);
+        textEmail.setText(email);
+        textPhone.setText(getString(R.string.profile_phone_not_updated));
+        
+    }
 
-        String email = user.getEmail() == null
-                ? ""
-                : user.getEmail();
-
-        String defaultName = "User";
-
-        if (email.contains("@")) {
-            defaultName = email.substring(0, email.indexOf("@"));
+    private String getDefaultName(String email) {
+        if (email != null && email.contains("@")) {
+            return email.substring(0, email.indexOf("@"));
         }
 
-        textAvatar.setText(getInitial(defaultName));
-        textName.setText(defaultName);
-        textEmail.setText(email);
-        textPhone.setText("Chưa cập nhật");
+        return "User";
+    }
+
+    private void bindViews() {
+        textAvatar = findViewById(R.id.textProfileAvatar);
+        textName = findViewById(R.id.textProfileName);
+        textEmail = findViewById(R.id.textProfileEmail);
+        textPhone = findViewById(R.id.textProfilePhone);
+
+        layoutEditName = findViewById(R.id.layoutEditProfileName);
+        layoutEditPhone = findViewById(R.id.layoutEditProfilePhone);
+
+        inputEditName = findViewById(R.id.inputEditProfileName);
+        inputEditPhone = findViewById(R.id.inputEditProfilePhone);
+
+        buttonEditProfile = findViewById(R.id.buttonEditProfile);
+        buttonCancelEdit = findViewById(R.id.buttonCancelProfileEdit);
+        buttonSaveProfile = findViewById(R.id.buttonSaveProfile);
+
+        layoutEditActions = findViewById(
+                R.id.layoutProfileEditActions
+        );
+    }
+
+    private void bindProfileData(FirebaseUser user) {
+        buttonEditProfile.setEnabled(false);
 
         firestore.collection("users")
                 .document(user.getUid())
                 .get()
                 .addOnSuccessListener(document -> {
-                    if (!document.exists()) {
-                        return;
-                    }
+                    if (document.exists()) {
+                        String name = document.getString("name");
+                        String phone = document.getString("phone");
 
-                    String name = document.getString("name");
-                    String phone = document.getString("phone");
+                        if (name != null && !name.trim().isEmpty()) {
+                            currentName = name.trim();
+                        }
 
-                    if (name != null && !name.trim().isEmpty()) {
-                        textName.setText(name);
-                        textAvatar.setText(getInitial(name));
+                        if (phone != null && !phone.trim().isEmpty()) {
+                            currentPhone = phone.trim();
+                        } else {
+                            currentPhone = "";
+                        }
                     }
+                    displayCurrentProfile();
 
-                    if (phone != null && !phone.trim().isEmpty()) {
-                        textPhone.setText(phone);
-                    }
+                    buttonEditProfile.setEnabled(true);
                 })
-                .addOnFailureListener(exception ->
-                        Toast.makeText(
-                                this,
-                                "Không thể tải thông tin hồ sơ",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                .addOnFailureListener(exception -> {
+                    buttonEditProfile.setEnabled(true);
+
+                    Toast.makeText(
+                            this,
+                            "Không thể tải thông tin hồ sơ: "
+                                    + exception.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+    }
+
+    private void displayCurrentProfile() {
+        textName.setText(currentName);
+        textAvatar.setText(getInitial(currentName));
+
+        if (currentPhone.isEmpty()) {
+            textPhone.setText(
+                    getString(R.string.profile_phone_not_updated)
+            );
+        } else {
+            textPhone.setText(currentPhone);
+        }
+    }
+
+    private void saveProfile() {
+        String newName = getValue(inputEditName);
+        String newPhone = getValue(inputEditPhone);
+
+        layoutEditName.setError(null);
+        layoutEditPhone.setError(null);
+
+        if(TextUtils.isEmpty(newName)){
+            layoutEditName.setError(getString(R.string.profile_name_required));
+            inputEditName.requestFocus();
+            return;
+        }
+        if(newName.length() < 2 || newName.length() > 50){
+            layoutEditName.setError(getString(R.string.profile_name_invalid));
+            inputEditName.requestFocus();
+            return;
+        }
+        if(TextUtils.isEmpty(newPhone)){
+            layoutEditPhone.setError(getString(R.string.profile_phone_required));
+            inputEditPhone.requestFocus();
+            return;
+        }
+        String normalizedPhone = newPhone.replaceAll("[\\s()-]", "");
+        if (!normalizedPhone.matches("^\\+?[0-9]{9,15}$")){
+            layoutEditPhone.setError(getString(R.string.profile_phone_invalid));
+            inputEditPhone.requestFocus();
+            return;
+        }
+        setSavingState(true);
+        Map<String,Object> updates = new HashMap<>();
+        updates.put("name", newName);
+        updates.put("phone", newPhone);
+        updates.put("updatedAt", FieldValue.serverTimestamp());
+        firestore.collection("users")
+                .document(currentUser.getUid())
+                .set(updates, SetOptions.merge())
+                .addOnSuccessListener(unused -> {
+                    currentName = newName;
+                    currentPhone = newPhone;
+                    setSavingState(false);
+                    exitEditMode();
+                })
+                .addOnFailureListener(exception ->{
+                   setSavingState(false);
+
+                    Toast.makeText(
+                            this,
+                            getString(
+                                    R.string.profile_update_failed,
+                                    exception.getMessage() == null
+                                            ? "Unknown error"
+                                            : exception.getMessage()
+                            ),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+
+
+    }
+
+    private void setSavingState(boolean saving) {
+        inputEditName.setEnabled(!saving);
+        inputEditPhone.setEnabled(!saving);
+        buttonCancelEdit.setEnabled(!saving);
+        buttonSaveProfile.setEnabled(!saving);
+        buttonSaveProfile.setText(saving ? getString(R.string.profile_saving) : getString(R.string.profile_save));
+    }
+
+    private String getValue(TextInputEditText input) {
+        if (input.getText() == null) {
+            return "";
+        }
+
+        return input.getText().toString().trim();
+    }
+
+
+    private void exitEditMode() {
+        edittingProfile = false;
+        layoutEditName.setError(null);
+        layoutEditPhone.setError(null);
+        layoutEditName.setVisibility(View.GONE);
+        layoutEditPhone.setVisibility(View.GONE);
+        textName.setVisibility(View.VISIBLE);
+        textPhone.setVisibility(View.VISIBLE);
+        layoutEditActions.setVisibility(View.GONE);
+        buttonEditProfile.setVisibility(View.VISIBLE);
+
+        displayCurrentProfile();
+    }
+
+    private void enterEditMode() {
+        edittingProfile = true;
+        inputEditName.setText(currentName);
+        inputEditPhone.setText(currentPhone);
+        layoutEditName.setError(null);
+        layoutEditPhone.setError(null);
+        textPhone.setVisibility(View.GONE);
+        textName.setVisibility(View.GONE);
+        layoutEditName.setVisibility(View.VISIBLE);
+        layoutEditPhone.setVisibility(View.VISIBLE);
+        buttonEditProfile.setVisibility(View.GONE);
+        layoutEditActions.setVisibility(View.VISIBLE);
+
+        inputEditName.requestFocus();
     }
 
 
@@ -118,10 +291,13 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void setupActions() {
-        findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
-        findViewById(R.id.buttonEditProfile).setOnClickListener(v ->
-                Toast.makeText(this, R.string.profile_edit_todo, Toast.LENGTH_SHORT).show()
-        );
+        findViewById(R.id.buttonBack).setOnClickListener(v->{
+            if (edittingProfile) enterEditMode();
+            else finish();
+        });
+        buttonEditProfile.setOnClickListener(v->enterEditMode());
+        buttonCancelEdit.setOnClickListener(v->exitEditMode());
+        buttonSaveProfile.setOnClickListener(V->saveProfile());
     }
 
     private void handleProfileMenuClick(ProfileMenuAdapter.ProfileMenuItem item) {

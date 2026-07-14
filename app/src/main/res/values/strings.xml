@@ -182,7 +182,6 @@
     <string name="profile_about">About Art Barbershop</string>
     <string name="profile_privacy">Privacy Policy</string>
     <string name="profile_logout">Logout</string>
-    <string name="profile_edit_todo">Edit profile will connect to profile logic later.</string>
     <string name="profile_menu_todo">%1$s will be connected later.</string>
     <string name="profile_logout_todo">Logout will call Firebase Auth when authentication is added.</string>
     <string name="profile_logout_demo">You have signed out of the demo.</string>
@@ -209,4 +208,17 @@
     <string name="action_open">Open</string>
     <string name="action_message">Message</string>
     <string name="action_logout">Logout</string>
+    <string name="profile_name_hint">Full Name</string>
+    <string name="profile_phone_hint">Phone Number</string>
+    <string name="profile_cancel">Cancel</string>
+    <string name="profile_save">Save Changes</string>
+    <string name="profile_saving">Saving...</string>
+    <string name="profile_phone_not_updated">Phone number not updated</string>
+    <string name="profile_name_required">Please input your name.</string>
+    <string name="profile_name_invalid">Name must contain 2 to 50 characters.</string>
+    <string name="profile_phone_required">Please input your phone number.</string>
+    <string name="profile_phone_invalid">Please input a valid phone number.</string>
+    <string name="profile_load_failed">Không thể tải thông tin hồ sơ.</string>
+    <string name="profile_update_success">Profile updated successfully.</string>
+    <string name="profile_update_failed">Cannot update profile: %1$s</string>
 </resources>

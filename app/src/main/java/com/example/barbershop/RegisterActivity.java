@@ -145,7 +145,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void setLoading(boolean loading) {
         buttonCreateAccount.setEnabled(!loading);
         buttonCreateAccount.setText(
-                loading ? "Đang tạo tài khoản..." : "Create Account"
+                loading ? "Creating account..." : "Create Account"
         );
     }
     private void showError(String defaultMessage, Exception exception){

@@ -156,19 +156,17 @@ public class LoginActivity extends AppCompatActivity {
         if (input.getText() == null) {
             return "";
         }
-
         return input.getText().toString().trim();
     }
     private void setLoading(boolean loading){
         buttonLogin.setEnabled(!loading);
-        buttonLogin.setText(loading ? "Đang đăng nhập..." : "Login");
+        buttonLogin.setText(loading ? "Logging in..." : "Login");
     }
     private void showError(String defaultMessage, Exception exception){
         String message = defaultMessage;
         if (exception != null && exception.getMessage() != null) {
             message += ": " + exception.getMessage();
         }
-
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 }
