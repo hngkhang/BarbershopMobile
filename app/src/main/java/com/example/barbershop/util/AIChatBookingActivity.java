@@ -1,4 +1,6 @@
-package com.example.barbershop;
+package com.example.barbershop.util;
+
+import com.example.barbershop.R;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +13,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.barbershop.adapters.BarberSuggestionAdapter;
+import com.example.barbershop.adapters.ChatMessageAdapter;
+import com.example.barbershop.adapters.ServiceSuggestionAdapter;
 
 import java.util.ArrayList;
 import java.util.List;

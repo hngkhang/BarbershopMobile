@@ -1,4 +1,6 @@
-package com.example.barbershop;
+package com.example.barbershop.util;
+
+import com.example.barbershop.R;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -14,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.barbershop.adapters.BarberAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;

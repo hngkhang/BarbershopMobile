@@ -12,46 +12,46 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Barbershop">
         <activity
-            android:name=".ProfileActivity"
+            android:name=".util.ProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".ReviewActivity"
+            android:name=".util.ReviewActivity"
             android:exported="false" />
         <activity
-            android:name=".AppointmentDetailActivity"
+            android:name=".util.AppointmentDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".AppointmentActivity"
+            android:name=".util.AppointmentActivity"
             android:exported="false" />
         <activity
-            android:name=".PaymentActivity"
+            android:name=".util.PaymentActivity"
             android:exported="false" />
         <activity
-            android:name=".AIChatBookingActivity"
+            android:name=".util.AIChatBookingActivity"
             android:exported="false" />
         <activity
-            android:name=".BookingConfirmActivity"
+            android:name=".util.BookingConfirmActivity"
             android:exported="false" />
         <activity
-            android:name=".BookingActivity"
+            android:name=".util.BookingActivity"
             android:exported="false" />
         <activity
-            android:name=".BarberListActivity"
+            android:name=".util.BarberListActivity"
             android:exported="false" />
         <activity
-            android:name=".ServiceListActivity"
+            android:name=".util.ServiceListActivity"
             android:exported="false" />
         <activity
-            android:name=".HomeActivity"
+            android:name=".util.HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".util.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".util.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".SplashActivity"
+            android:name=".util.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -60,7 +60,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".util.MainActivity"
             android:exported="false" />
     </application>
 

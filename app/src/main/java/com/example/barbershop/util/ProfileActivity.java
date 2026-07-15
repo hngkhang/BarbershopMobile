@@ -1,4 +1,6 @@
-package com.example.barbershop;
+package com.example.barbershop.util;
+
+import com.example.barbershop.R;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -12,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.barbershop.adapters.ProfileMenuAdapter;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.textfield.TextInputEditText;

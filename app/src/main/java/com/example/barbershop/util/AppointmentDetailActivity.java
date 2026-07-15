@@ -1,4 +1,6 @@
-package com.example.barbershop;
+package com.example.barbershop.util;
+
+import com.example.barbershop.R;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +9,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import com.example.barbershop.adapters.AppointmentAdapter;
 
 import java.util.Locale;
 
