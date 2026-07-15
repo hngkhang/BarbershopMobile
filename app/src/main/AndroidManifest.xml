@@ -36,6 +36,9 @@
             android:name=".util.BookingActivity"
             android:exported="false" />
         <activity
+            android:name=".util.BarberDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".util.BarberListActivity"
             android:exported="false" />
         <activity

@@ -18,39 +18,39 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.barbershop.adapters.BarberAdapter;
+import com.example.barbershop.data.BarberRepository;
+import com.example.barbershop.models.Barber;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 public class BarberListActivity extends AppCompatActivity {
 
-    private static final String FILTER_TOP_RATED = "Top Rated";
+    public static final String EXTRA_BARBER_ID = "barberId";
 
     private BarberAdapter barberAdapter;
+    private BarberRepository barberRepository;
     private EditText searchEditText;
     private View emptyState;
     private View loadingState;
-    private View errorState;
-    private String selectedFilter = FILTER_TOP_RATED;
-    private final List<BarberAdapter.BarberItem> allBarbers = new ArrayList<>();
+    private TextView errorState;
+    private String selectedFilter = "";
+    private final List<Barber> allBarbers = new ArrayList<>();
     private final List<TextView> filterChips = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barber_list);
+        barberRepository = new BarberRepository();
 
         setupTopBar();
         setupRecyclerView();
         setupSearch();
         setupFilterChips();
 
-        showLoading(false);
-        // TODO: Replace this temporary in-memory sample data with Firebase/SQLite barber data.
-        loadSampleBarbers();
-        applyFilters();
+        loadBarbers();
     }
 
     private void setupTopBar() {
@@ -92,10 +92,11 @@ public class BarberListActivity extends AppCompatActivity {
     }
 
     private void setupFilterChips() {
-        addFilterChip(R.id.chipTopRated, FILTER_TOP_RATED);
-        addFilterChip(R.id.chipAvailable, "Available");
-        addFilterChip(R.id.chipFade, "Fade");
-        addFilterChip(R.id.chipColoring, "Coloring");
+        selectedFilter = getString(R.string.filter_top_rated);
+        addFilterChip(R.id.chipTopRated, getString(R.string.filter_top_rated));
+        addFilterChip(R.id.chipAvailable, getString(R.string.filter_available));
+        findViewById(R.id.chipFade).setVisibility(View.GONE);
+        findViewById(R.id.chipColoring).setVisibility(View.GONE);
         updateChipSelection();
     }
 
@@ -120,87 +121,38 @@ public class BarberListActivity extends AppCompatActivity {
         }
     }
 
-    private void loadSampleBarbers() {
+    private void loadBarbers() {
+        showLoading(true);
         allBarbers.clear();
-        allBarbers.addAll(Arrays.asList(
-                new BarberAdapter.BarberItem(
-                        "Michael",
-                        "M",
-                        "8 years experience",
-                        "Specialty: Fade, Classic Cut",
-                        "4.9 (320)",
-                        "Available Today",
-                        "9:00 AM - 7:00 PM",
-                        getString(R.string.action_view_profile),
-                        true,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "David",
-                        "D",
-                        "6 years experience",
-                        "Specialty: Modern, Styling",
-                        "4.8 (245)",
-                        "Available Today",
-                        "10:00 AM - 8:00 PM",
-                        getString(R.string.action_select),
-                        true,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "James",
-                        "J",
-                        "7 years experience",
-                        "Specialty: Coloring, Fade",
-                        "4.8 (210)",
-                        "Available Today",
-                        "11:00 AM - 7:00 PM",
-                        getString(R.string.action_view_profile),
-                        true,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "Sophia",
-                        "S",
-                        "5 years experience",
-                        "Specialty: Coloring, Perm",
-                        "4.7 (188)",
-                        "Available Today",
-                        "9:00 AM - 6:00 PM",
-                        getString(R.string.action_select),
-                        false,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "Ethan",
-                        "E",
-                        "4 years experience",
-                        "Specialty: Fade, Beard",
-                        "4.6 (156)",
-                        "Available Today",
-                        "12:00 PM - 9:00 PM",
-                        getString(R.string.action_select),
-                        false,
-                        true
-                )
-        ));
+        barberRepository.getAllBarbers(new BarberRepository.RepositoryCallback<List<Barber>>() {
+            @Override
+            public void onSuccess(List<Barber> data) {
+                allBarbers.clear();
+                allBarbers.addAll(data);
+                applyFilters();
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                showError(exception);
+            }
+        });
     }
 
     private void applyFilters() {
         String query = searchEditText == null
                 ? ""
                 : searchEditText.getText().toString().trim().toLowerCase(Locale.US);
-        List<BarberAdapter.BarberItem> filteredBarbers = new ArrayList<>();
+        List<Barber> filteredBarbers = new ArrayList<>();
 
-        for (BarberAdapter.BarberItem barberItem : allBarbers) {
-            boolean matchesFilter = matchesSelectedFilter(barberItem);
+        for (Barber barber : allBarbers) {
+            boolean matchesFilter = matchesSelectedFilter(barber);
             boolean matchesQuery = query.isEmpty()
-                    || barberItem.name.toLowerCase(Locale.US).contains(query)
-                    || barberItem.specialty.toLowerCase(Locale.US).contains(query)
-                    || barberItem.experience.toLowerCase(Locale.US).contains(query);
+                    || barber.getName().toLowerCase(Locale.US).contains(query)
+                    || barber.getExperience().toLowerCase(Locale.US).contains(query);
 
             if (matchesFilter && matchesQuery) {
-                filteredBarbers.add(barberItem);
+                filteredBarbers.add(barber);
             }
         }
 
@@ -208,14 +160,8 @@ public class BarberListActivity extends AppCompatActivity {
         showContentState(filteredBarbers.isEmpty());
     }
 
-    private boolean matchesSelectedFilter(BarberAdapter.BarberItem barberItem) {
-        if (FILTER_TOP_RATED.equals(selectedFilter)) {
-            return barberItem.topRated;
-        }
-        if ("Available".equals(selectedFilter)) {
-            return barberItem.available;
-        }
-        return barberItem.specialty.toLowerCase(Locale.US).contains(selectedFilter.toLowerCase(Locale.US));
+    private boolean matchesSelectedFilter(Barber barber) {
+        return barber.isActive();
     }
 
     private void showLoading(boolean loading) {
@@ -230,14 +176,21 @@ public class BarberListActivity extends AppCompatActivity {
         emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
 
-    private void openBookingIfAvailable(BarberAdapter.BarberItem barberItem) {
+    private void showError(Exception exception) {
+        loadingState.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
+        errorState.setVisibility(View.VISIBLE);
+        String message = exception == null || exception.getMessage() == null
+                ? getString(R.string.state_error_placeholder)
+                : exception.getMessage();
+        errorState.setText(getString(R.string.barbers_load_failed, message));
+    }
+
+    private void openBookingIfAvailable(Barber barber) {
         try {
-            Class<?> targetClass = Class.forName(getPackageName() + ".BookingActivity");
-            Intent intent = new Intent(this, targetClass);
-            intent.putExtra("selectedBarberName", barberItem.name);
+            Intent intent = new Intent(this, BarberDetailActivity.class);
+            intent.putExtra(EXTRA_BARBER_ID, barber.getId());
             startActivity(intent);
-        } catch (ClassNotFoundException exception) {
-            Toast.makeText(this, getString(R.string.nav_target_unavailable, "Booking"), Toast.LENGTH_SHORT).show();
         } catch (ActivityNotFoundException exception) {
             Toast.makeText(this, getString(R.string.nav_target_not_registered), Toast.LENGTH_SHORT).show();
         }

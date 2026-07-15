@@ -5,29 +5,34 @@ import com.example.barbershop.R;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.barbershop.models.Barber;
+import com.example.barbershop.services.ImageLoader;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class BarberAdapter extends RecyclerView.Adapter<BarberAdapter.BarberViewHolder> {
 
     public interface OnBarberClickListener {
-        void onBarberActionClick(BarberItem barberItem);
+        void onBarberActionClick(Barber barber);
     }
 
-    private final List<BarberItem> barbers = new ArrayList<>();
+    private final List<Barber> barbers = new ArrayList<>();
     private final OnBarberClickListener listener;
 
     public BarberAdapter(OnBarberClickListener listener) {
         this.listener = listener;
     }
 
-    public void submitList(List<BarberItem> nextBarbers) {
+    public void submitList(List<Barber> nextBarbers) {
         barbers.clear();
         barbers.addAll(nextBarbers);
         notifyDataSetChanged();
@@ -42,8 +47,8 @@ public class BarberAdapter extends RecyclerView.Adapter<BarberAdapter.BarberView
 
     @Override
     public void onBindViewHolder(@NonNull BarberViewHolder holder, int position) {
-        BarberItem barberItem = barbers.get(position);
-        holder.bind(barberItem, listener);
+        Barber barber = barbers.get(position);
+        holder.bind(barber, listener);
     }
 
     @Override
@@ -52,6 +57,7 @@ public class BarberAdapter extends RecyclerView.Adapter<BarberAdapter.BarberView
     }
 
     static class BarberViewHolder extends RecyclerView.ViewHolder {
+        private final ImageView imageBarberAvatar;
         private final TextView textBarberInitial;
         private final TextView textBarberName;
         private final TextView textBarberExperience;
@@ -63,6 +69,7 @@ public class BarberAdapter extends RecyclerView.Adapter<BarberAdapter.BarberView
 
         BarberViewHolder(@NonNull View itemView) {
             super(itemView);
+            imageBarberAvatar = itemView.findViewById(R.id.imageBarberAvatar);
             textBarberInitial = itemView.findViewById(R.id.textBarberInitial);
             textBarberName = itemView.findViewById(R.id.textBarberName);
             textBarberExperience = itemView.findViewById(R.id.textBarberExperience);
@@ -73,56 +80,40 @@ public class BarberAdapter extends RecyclerView.Adapter<BarberAdapter.BarberView
             buttonBarberAction = itemView.findViewById(R.id.buttonBarberAction);
         }
 
-        void bind(BarberItem barberItem, OnBarberClickListener listener) {
-            textBarberInitial.setText(barberItem.initial);
-            textBarberInitial.setContentDescription(
-                    itemView.getContext().getString(R.string.barber_avatar_content_description, barberItem.name)
+        void bind(Barber barber, OnBarberClickListener listener) {
+            ImageLoader.loadAvatar(
+                    imageBarberAvatar,
+                    textBarberInitial,
+                    barber.getAvatarUrl(),
+                    barber.getInitial()
             );
-            textBarberName.setText(barberItem.name);
-            textBarberExperience.setText(barberItem.experience);
-            textBarberSpecialty.setText(barberItem.specialty);
-            textBarberRating.setText(barberItem.rating);
-            textBarberStatus.setText(barberItem.status);
-            textBarberAvailableTime.setText(barberItem.availableTime);
-            buttonBarberAction.setText(barberItem.actionLabel);
-            buttonBarberAction.setOnClickListener(v -> listener.onBarberActionClick(barberItem));
+            textBarberInitial.setContentDescription(
+                    itemView.getContext().getString(R.string.barber_avatar_content_description, barber.getName())
+            );
+            textBarberName.setText(barber.getName());
+            textBarberExperience.setText(formatExperience(barber.getExperience()));
+            textBarberSpecialty.setText(R.string.barber_specialty_not_available);
+            textBarberRating.setText(String.format(Locale.US, "%.1f", barber.getDisplayRating()));
+            textBarberStatus.setText(R.string.barber_status_active);
+            textBarberAvailableTime.setText(R.string.barber_schedule_view_details);
+            buttonBarberAction.setText(R.string.action_view_profile);
+            buttonBarberAction.setOnClickListener(v -> listener.onBarberActionClick(barber));
         }
-    }
 
-    public static class BarberItem {
-        public final String name;
-        public final String initial;
-        public final String experience;
-        public final String specialty;
-        public final String rating;
-        public final String status;
-        public final String availableTime;
-        public final String actionLabel;
-        public final boolean topRated;
-        public final boolean available;
+        private String formatExperience(String experience) {
+            if (experience == null || experience.trim().isEmpty()) {
+                return itemView.getContext().getString(R.string.barber_experience_unknown);
+            }
 
-        public BarberItem(
-                String name,
-                String initial,
-                String experience,
-                String specialty,
-                String rating,
-                String status,
-                String availableTime,
-                String actionLabel,
-                boolean topRated,
-                boolean available
-        ) {
-            this.name = name;
-            this.initial = initial;
-            this.experience = experience;
-            this.specialty = specialty;
-            this.rating = rating;
-            this.status = status;
-            this.availableTime = availableTime;
-            this.actionLabel = actionLabel;
-            this.topRated = topRated;
-            this.available = available;
+            String trimmedExperience = experience.trim();
+            if (trimmedExperience.toLowerCase(Locale.US).contains("year")) {
+                return trimmedExperience;
+            }
+
+            return itemView.getContext().getString(
+                    R.string.barber_experience_years_format,
+                    trimmedExperience
+            );
         }
     }
 }
