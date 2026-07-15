@@ -1,6 +1,5 @@
 package com.example.barbershop;
 
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -15,227 +14,440 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class BarberListActivity extends AppCompatActivity {
 
-    private static final String FILTER_TOP_RATED = "Top Rated";
+    private static final String COLLECTION_BARBERS = "barbers";
+    private static final String COLLECTION_RATINGS = "ratings";
 
+    private static final String FIELD_BARBER_ID = "barberId";
+    private static final String FIELD_NAME = "name";
+    private static final String FIELD_EXPERIENCE = "experience";
+    private static final String FIELD_AVATAR_URL = "avatarUrl";
+    private static final String FIELD_ACTIVE = "active";
+    private static final String FIELD_RATE = "rate";
+
+    private static final int FILTER_TOP_RATED = 1;
+    private static final int FILTER_AVAILABLE = 2;
+
+    private final List<BarberAdapter.BarberItem> allBarbers = new ArrayList<>();
+    private final List<TextView> filterChips = new ArrayList<>();
+
+    private FirebaseFirestore firestore;
     private BarberAdapter barberAdapter;
+
     private EditText searchEditText;
     private View emptyState;
     private View loadingState;
     private View errorState;
-    private String selectedFilter = FILTER_TOP_RATED;
-    private final List<BarberAdapter.BarberItem> allBarbers = new ArrayList<>();
-    private final List<TextView> filterChips = new ArrayList<>();
+
+    private int selectedFilter = FILTER_TOP_RATED;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barber_list);
 
+        firestore = FirebaseFirestore.getInstance();
+
         setupTopBar();
         setupRecyclerView();
         setupSearch();
         setupFilterChips();
+    }
 
-        showLoading(false);
-        // TODO: Replace this temporary in-memory sample data with Firebase/SQLite barber data.
-        loadSampleBarbers();
-        applyFilters();
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        /*
+         * Load lại khi quay về từ ReviewActivity
+         * để cập nhật rating trung bình mới.
+         */
+        loadBarbersFromFirebase();
     }
 
     private void setupTopBar() {
-        findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
-        findViewById(R.id.buttonNotifications).setOnClickListener(v ->
-                Toast.makeText(this, getString(R.string.nav_target_unavailable, "Notifications"), Toast.LENGTH_SHORT).show()
+        findViewById(R.id.buttonBack).setOnClickListener(view -> finish());
+
+        findViewById(R.id.buttonNotifications).setOnClickListener(view ->
+                Toast.makeText(
+                        this,
+                        R.string.notifications_unavailable,
+                        Toast.LENGTH_SHORT
+                ).show()
         );
     }
 
     private void setupRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recyclerBarbers);
+
         emptyState = findViewById(R.id.layoutBarbersEmpty);
         loadingState = findViewById(R.id.layoutBarbersLoading);
         errorState = findViewById(R.id.layoutBarbersError);
 
-        barberAdapter = new BarberAdapter(this::openBookingIfAvailable);
+        barberAdapter = new BarberAdapter(this::openBarberProfile);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(barberAdapter);
+
+        errorState.setOnClickListener(view -> loadBarbersFromFirebase());
     }
 
     private void setupSearch() {
         searchEditText = findViewById(R.id.editTextSearchBarbers);
+
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // No-op.
+            public void beforeTextChanged(
+                    CharSequence text,
+                    int start,
+                    int count,
+                    int after
+            ) {
+                // Không xử lý.
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            public void onTextChanged(
+                    CharSequence text,
+                    int start,
+                    int before,
+                    int count
+            ) {
                 applyFilters();
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                // No-op.
+            public void afterTextChanged(Editable editable) {
+                // Không xử lý.
             }
         });
     }
 
     private void setupFilterChips() {
         addFilterChip(R.id.chipTopRated, FILTER_TOP_RATED);
-        addFilterChip(R.id.chipAvailable, "Available");
-        addFilterChip(R.id.chipFade, "Fade");
-        addFilterChip(R.id.chipColoring, "Coloring");
+        addFilterChip(R.id.chipAvailable, FILTER_AVAILABLE);
+
+        /*
+         * Firestore hiện chưa có specialty nên chưa thể
+         * lọc chính xác Fade và Coloring.
+         */
+        findViewById(R.id.chipFade).setVisibility(View.GONE);
+        findViewById(R.id.chipColoring).setVisibility(View.GONE);
+
         updateChipSelection();
     }
 
-    private void addFilterChip(int chipId, String filter) {
+    private void addFilterChip(int chipId, int filterType) {
         TextView chip = findViewById(chipId);
-        filterChips.add(chip);
-        chip.setOnClickListener(v -> {
-            selectedFilter = filter;
+
+        chip.setTag(filterType);
+        chip.setOnClickListener(view -> {
+            selectedFilter = filterType;
             updateChipSelection();
             applyFilters();
         });
+
+        filterChips.add(chip);
     }
 
     private void updateChipSelection() {
         for (TextView chip : filterChips) {
-            boolean selected = chip.getText().toString().equals(selectedFilter);
-            chip.setBackgroundResource(selected ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+            Integer chipFilter = (Integer) chip.getTag();
+            boolean selected = chipFilter != null && chipFilter == selectedFilter;
+
+            chip.setBackgroundResource(
+                    selected
+                            ? R.drawable.bg_chip_selected
+                            : R.drawable.bg_chip_unselected
+            );
+
             chip.setTextColor(ContextCompat.getColor(
                     this,
-                    selected ? R.color.color_text_inverse : R.color.color_text_primary
+                    selected
+                            ? R.color.color_text_inverse
+                            : R.color.color_text_primary
             ));
         }
     }
 
-    private void loadSampleBarbers() {
-        allBarbers.clear();
-        allBarbers.addAll(Arrays.asList(
-                new BarberAdapter.BarberItem(
-                        "Michael",
-                        "M",
-                        "8 years experience",
-                        "Specialty: Fade, Classic Cut",
-                        "4.9 (320)",
-                        "Available Today",
-                        "9:00 AM - 7:00 PM",
-                        getString(R.string.action_view_profile),
-                        true,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "David",
-                        "D",
-                        "6 years experience",
-                        "Specialty: Modern, Styling",
-                        "4.8 (245)",
-                        "Available Today",
-                        "10:00 AM - 8:00 PM",
-                        getString(R.string.action_select),
-                        true,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "James",
-                        "J",
-                        "7 years experience",
-                        "Specialty: Coloring, Fade",
-                        "4.8 (210)",
-                        "Available Today",
-                        "11:00 AM - 7:00 PM",
-                        getString(R.string.action_view_profile),
-                        true,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "Sophia",
-                        "S",
-                        "5 years experience",
-                        "Specialty: Coloring, Perm",
-                        "4.7 (188)",
-                        "Available Today",
-                        "9:00 AM - 6:00 PM",
-                        getString(R.string.action_select),
-                        false,
-                        true
-                ),
-                new BarberAdapter.BarberItem(
-                        "Ethan",
-                        "E",
-                        "4 years experience",
-                        "Specialty: Fade, Beard",
-                        "4.6 (156)",
-                        "Available Today",
-                        "12:00 PM - 9:00 PM",
-                        getString(R.string.action_select),
-                        false,
-                        true
-                )
-        ));
+    /**
+     * Đọc collection ratings trước để tính tổng điểm
+     * và số lượt đánh giá của từng barber.
+     */
+    private void loadBarbersFromFirebase() {
+        showLoading();
+
+        firestore.collection(COLLECTION_RATINGS)
+                .get()
+                .addOnSuccessListener(ratingSnapshot -> {
+                    Map<Long, Double> ratingSums = new HashMap<>();
+                    Map<Long, Long> ratingCounts = new HashMap<>();
+
+                    for (QueryDocumentSnapshot document : ratingSnapshot) {
+                        Long barberId = readLong(document.get(FIELD_BARBER_ID));
+                        Double rate = readDouble(document.get(FIELD_RATE));
+
+                        if (barberId == null || rate == null || rate <= 0 || rate > 5) {
+                            continue;
+                        }
+
+                        double currentSum = ratingSums.getOrDefault(barberId, 0.0);
+                        long currentCount = ratingCounts.getOrDefault(barberId, 0L);
+
+                        ratingSums.put(barberId, currentSum + rate);
+                        ratingCounts.put(barberId, currentCount + 1);
+                    }
+
+                    loadBarberDocuments(ratingSums, ratingCounts);
+                })
+                .addOnFailureListener(exception -> {
+                    Toast.makeText(
+                            this,
+                            getString(
+                                    R.string.ratings_load_failed,
+                                    safeErrorMessage(exception)
+                            ),
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    /*
+                     * Nếu chưa đọc được ratings thì vẫn load barber,
+                     * nhưng rating tạm thời hiển thị là chưa có.
+                     */
+                    loadBarberDocuments(new HashMap<>(), new HashMap<>());
+                });
+    }
+
+    /**
+     * Đọc collection barbers và kết hợp dữ liệu rating.
+     */
+    private void loadBarberDocuments(
+            Map<Long, Double> ratingSums,
+            Map<Long, Long> ratingCounts
+    ) {
+        firestore.collection(COLLECTION_BARBERS)
+                .get()
+                .addOnSuccessListener(barberSnapshot -> {
+                    allBarbers.clear();
+
+                    for (QueryDocumentSnapshot document : barberSnapshot) {
+                        Long barberId = readLong(document.get(FIELD_BARBER_ID));
+
+                        /*
+                         * Database phải có field barberId kiểu int64.
+                         * Những document không có barberId hợp lệ sẽ bị bỏ qua.
+                         */
+                        if (barberId == null || barberId < 1) {
+                            continue;
+                        }
+
+                        String name = readString(
+                                document.get(FIELD_NAME),
+                                getString(R.string.barber_name_unknown)
+                        );
+
+                        String experience = formatExperience(
+                                document.get(FIELD_EXPERIENCE)
+                        );
+
+                        String avatarUrl = readString(
+                                document.get(FIELD_AVATAR_URL),
+                                ""
+                        );
+
+                        boolean active = Boolean.TRUE.equals(
+                                document.getBoolean(FIELD_ACTIVE)
+                        );
+
+                        long ratingCount = ratingCounts.getOrDefault(barberId, 0L);
+                        double ratingSum = ratingSums.getOrDefault(barberId, 0.0);
+
+                        double averageRating = ratingCount == 0
+                                ? 0.0
+                                : ratingSum / ratingCount;
+
+                        allBarbers.add(new BarberAdapter.BarberItem(
+                                barberId,
+                                name,
+                                experience,
+                                avatarUrl,
+                                active,
+                                averageRating,
+                                ratingCount
+                        ));
+                    }
+
+                    applyFilters();
+                })
+                .addOnFailureListener(this::showLoadError);
     }
 
     private void applyFilters() {
-        String query = searchEditText == null
-                ? ""
-                : searchEditText.getText().toString().trim().toLowerCase(Locale.US);
+        if (barberAdapter == null || searchEditText == null) {
+            return;
+        }
+
+        String query = searchEditText.getText()
+                .toString()
+                .trim()
+                .toLowerCase(Locale.US);
+
         List<BarberAdapter.BarberItem> filteredBarbers = new ArrayList<>();
 
-        for (BarberAdapter.BarberItem barberItem : allBarbers) {
-            boolean matchesFilter = matchesSelectedFilter(barberItem);
-            boolean matchesQuery = query.isEmpty()
-                    || barberItem.name.toLowerCase(Locale.US).contains(query)
-                    || barberItem.specialty.toLowerCase(Locale.US).contains(query)
-                    || barberItem.experience.toLowerCase(Locale.US).contains(query);
+        for (BarberAdapter.BarberItem barber : allBarbers) {
+            boolean matchesAvailable = selectedFilter != FILTER_AVAILABLE
+                    || barber.active;
 
-            if (matchesFilter && matchesQuery) {
-                filteredBarbers.add(barberItem);
+            boolean matchesSearch = query.isEmpty()
+                    || barber.name.toLowerCase(Locale.US).contains(query)
+                    || barber.experience.toLowerCase(Locale.US).contains(query);
+
+            if (matchesAvailable && matchesSearch) {
+                filteredBarbers.add(barber);
             }
         }
 
+        if (selectedFilter == FILTER_TOP_RATED) {
+            filteredBarbers.sort((first, second) -> {
+                int ratingComparison = Double.compare(
+                        second.averageRating,
+                        first.averageRating
+                );
+
+                if (ratingComparison != 0) {
+                    return ratingComparison;
+                }
+
+                int countComparison = Long.compare(
+                        second.ratingCount,
+                        first.ratingCount
+                );
+
+                if (countComparison != 0) {
+                    return countComparison;
+                }
+
+                return first.name.compareToIgnoreCase(second.name);
+            });
+        } else {
+            filteredBarbers.sort(
+                    (first, second) ->
+                            first.name.compareToIgnoreCase(second.name)
+            );
+        }
+
         barberAdapter.submitList(filteredBarbers);
-        showContentState(filteredBarbers.isEmpty());
+        showContent(filteredBarbers.isEmpty());
     }
 
-    private boolean matchesSelectedFilter(BarberAdapter.BarberItem barberItem) {
-        if (FILTER_TOP_RATED.equals(selectedFilter)) {
-            return barberItem.topRated;
+    /**
+     * Mở ReviewActivity như trang Barber Profile.
+     */
+    private void openBarberProfile(BarberAdapter.BarberItem barber) {
+        if (!barber.active) {
+            Toast.makeText(
+                    this,
+                    R.string.barber_unavailable,
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
         }
-        if ("Available".equals(selectedFilter)) {
-            return barberItem.available;
-        }
-        return barberItem.specialty.toLowerCase(Locale.US).contains(selectedFilter.toLowerCase(Locale.US));
+
+        Intent intent = new Intent(this, ReviewActivity.class);
+        intent.putExtra("barberId", barber.barberId);
+        startActivity(intent);
     }
 
-    private void showLoading(boolean loading) {
-        loadingState.setVisibility(loading ? View.VISIBLE : View.GONE);
-        errorState.setVisibility(View.GONE);
+    private void showLoading() {
+        loadingState.setVisibility(View.VISIBLE);
         emptyState.setVisibility(View.GONE);
+        errorState.setVisibility(View.GONE);
     }
 
-    private void showContentState(boolean empty) {
+    private void showContent(boolean empty) {
         loadingState.setVisibility(View.GONE);
         errorState.setVisibility(View.GONE);
         emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
 
-    private void openBookingIfAvailable(BarberAdapter.BarberItem barberItem) {
-        try {
-            Class<?> targetClass = Class.forName(getPackageName() + ".BookingActivity");
-            Intent intent = new Intent(this, targetClass);
-            intent.putExtra("selectedBarberName", barberItem.name);
-            startActivity(intent);
-        } catch (ClassNotFoundException exception) {
-            Toast.makeText(this, getString(R.string.nav_target_unavailable, "Booking"), Toast.LENGTH_SHORT).show();
-        } catch (ActivityNotFoundException exception) {
-            Toast.makeText(this, getString(R.string.nav_target_not_registered), Toast.LENGTH_SHORT).show();
+    private void showLoadError(Exception exception) {
+        loadingState.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
+        errorState.setVisibility(View.VISIBLE);
+
+        Toast.makeText(
+                this,
+                getString(
+                        R.string.barbers_load_failed,
+                        safeErrorMessage(exception)
+                ),
+                Toast.LENGTH_LONG
+        ).show();
+    }
+
+    private Long readLong(Object value) {
+        if (!(value instanceof Number)) {
+            return null;
         }
+
+        return ((Number) value).longValue();
+    }
+
+    private Double readDouble(Object value) {
+        if (!(value instanceof Number)) {
+            return null;
+        }
+
+        return ((Number) value).doubleValue();
+    }
+
+    private String readString(Object value, String fallback) {
+        if (value == null) {
+            return fallback;
+        }
+
+        String text = String.valueOf(value).trim();
+        return text.isEmpty() ? fallback : text;
+    }
+    private String formatExperience(Object value) {
+        if (value == null) {
+            return getString(R.string.barber_experience_not_updated);
+        }
+
+        String experience = String.valueOf(value).trim();
+
+        if (experience.isEmpty()) {
+            return getString(R.string.barber_experience_not_updated);
+        }
+
+        if (experience.toLowerCase(Locale.US).contains("year")) {
+            return experience;
+        }
+
+        return getString(
+                R.string.barber_experience_format,
+                experience
+        );
+    }
+
+    private String safeErrorMessage(Exception exception) {
+        if (exception == null
+                || exception.getMessage() == null
+                || exception.getMessage().trim().isEmpty()) {
+            return getString(R.string.unknown_error);
+        }
+
+        return exception.getMessage();
     }
 }
