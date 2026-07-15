@@ -49,7 +49,11 @@ public class BarberListActivity extends AppCompatActivity {
         setupRecyclerView();
         setupSearch();
         setupFilterChips();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadBarbers();
     }
 
@@ -69,6 +73,7 @@ public class BarberListActivity extends AppCompatActivity {
         barberAdapter = new BarberAdapter(this::openBookingIfAvailable);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(barberAdapter);
+        errorState.setOnClickListener(v -> loadBarbers());
     }
 
     private void setupSearch() {

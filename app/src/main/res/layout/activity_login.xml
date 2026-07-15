@@ -8,7 +8,7 @@
     android:background="@color/color_bg"
     android:fillViewport="true"
     android:fitsSystemWindows="true"
-    tools:context=".LoginActivity">
+    tools:context=".util.LoginActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

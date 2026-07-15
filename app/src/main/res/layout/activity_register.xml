@@ -8,7 +8,7 @@
     android:background="@color/color_bg"
     android:fillViewport="true"
     android:fitsSystemWindows="true"
-    tools:context=".RegisterActivity">
+    tools:context=".util.RegisterActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

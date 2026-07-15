@@ -245,4 +245,33 @@
     <string name="profile_load_failed">Không thể tải thông tin hồ sơ.</string>
     <string name="profile_update_success">Profile updated successfully.</string>
     <string name="profile_update_failed">Cannot update profile: %1$s</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="screen_barber_profile_title">Barber Profile</string>
+    <string name="barber_status_available">Available</string>
+    <string name="barber_status_unavailable">Unavailable</string>
+    <string name="barber_no_ratings">No ratings yet</string>
+    <string name="barber_rating_format">%1$.1f (%2$d)</string>
+    <string name="barber_profile_rating_format">Average rating: %1$.1f/5 (%2$d ratings)</string>
+    <string name="barber_experience_years">%1$d years experience</string>
+    <string name="barber_experience_not_updated">Experience not updated</string>
+    <string name="barbers_load_failed">Cannot load barbers: %1$s</string>
+    <string name="barber_not_found">Barber does not exist.</string>
+    <string name="barber_invalid_data">Barber data is invalid.</string>
+    <string name="barber_profile_load_failed">Cannot load barber profile: %1$s</string>
+    <string name="rating_load_failed">Cannot load rating summary: %1$s</string>
+    <string name="review_barber_missing">Cannot open barber profile because barberId is missing.</string>
+    <string name="review_login_required">Please sign in before submitting a review.</string>
+    <string name="review_submitting">Submitting...</string>
+    <string name="review_submit_success">Your rating and feedback were submitted.</string>
+    <string name="review_submit_failed">Cannot submit review: %1$s</string>
+    <string name="notifications_unavailable">Notifications are not available yet.</string>
+    <string name="barber_name_unknown">Unnamed barber</string>
+    <string name="barber_experience_format">%1$s years experience</string>
+    <string name="barber_unavailable">This barber is currently unavailable.</string>
+    <string name="ratings_load_failed">Cannot load ratings: %1$s</string>
+    <string name="home_featured_initial_placeholder">B</string>
+    <string name="home_featured_rating_format">★ %1$.1f</string>
+    <string name="home_featured_barbers_load_failed">
+    Cannot load featured barbers: %1$s
+</string>
 </resources>

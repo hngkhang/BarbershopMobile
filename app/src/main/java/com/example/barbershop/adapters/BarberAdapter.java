@@ -34,7 +34,9 @@ public class BarberAdapter extends RecyclerView.Adapter<BarberAdapter.BarberView
 
     public void submitList(List<Barber> nextBarbers) {
         barbers.clear();
-        barbers.addAll(nextBarbers);
+        if (nextBarbers != null) {
+            barbers.addAll(nextBarbers);
+        }
         notifyDataSetChanged();
     }
 
@@ -97,7 +99,14 @@ public class BarberAdapter extends RecyclerView.Adapter<BarberAdapter.BarberView
             textBarberStatus.setText(R.string.barber_status_active);
             textBarberAvailableTime.setText(R.string.barber_schedule_view_details);
             buttonBarberAction.setText(R.string.action_view_profile);
-            buttonBarberAction.setOnClickListener(v -> listener.onBarberActionClick(barber));
+            buttonBarberAction.setOnClickListener(v -> notifyBarberClick(barber, listener));
+            itemView.setOnClickListener(v -> notifyBarberClick(barber, listener));
+        }
+
+        private void notifyBarberClick(Barber barber, OnBarberClickListener listener) {
+            if (listener != null && barber.isActive()) {
+                listener.onBarberActionClick(barber);
+            }
         }
 
         private String formatExperience(String experience) {

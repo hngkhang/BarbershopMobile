@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/color_bg"
     android:fitsSystemWindows="true"
-    tools:context=".MainActivity">
+    tools:context=".util.MainActivity">
 
     <!-- TODO: Replace this shell content with live home/navigation data from Firebase/SQLite. -->
     <LinearLayout
