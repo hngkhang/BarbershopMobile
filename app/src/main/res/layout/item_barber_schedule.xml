@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget_ArtBarbershop_Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_8"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/space_12">
+
+        <ImageView
+            android:layout_width="@dimen/space_24"
+            android:layout_height="@dimen/space_24"
+            android:contentDescription="@string/barber_schedule"
+            android:src="@drawable/ic_calendar" />
+
+        <TextView
+            android:id="@+id/textScheduleDate"
+            style="@style/TextAppearance_ArtBarbershop_Body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_10"
+            android:layout_weight="1"
+            android:textColor="@color/color_text_primary"
+            tools:text="Mon, Jul 20" />
+
+        <TextView
+            android:id="@+id/textScheduleTime"
+            style="@style/TextAppearance_ArtBarbershop_Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_text_secondary"
+            tools:text="9:00 AM - 5:00 PM" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

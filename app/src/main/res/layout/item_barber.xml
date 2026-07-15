@@ -14,17 +14,32 @@
         android:minHeight="@dimen/barber_card_min_height"
         android:padding="@dimen/space_12">
 
-        <TextView
-            android:id="@+id/textBarberInitial"
-            style="@style/TextAppearance_ArtBarbershop_CardTitle"
+        <FrameLayout
+            android:id="@+id/layoutBarberAvatar"
             android:layout_width="@dimen/avatar_size"
             android:layout_height="@dimen/avatar_size"
-            android:background="@drawable/bg_avatar_circle"
-            android:gravity="center"
-            android:textColor="@color/color_primary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="M" />
+            tools:ignore="ContentDescription">
+
+            <TextView
+                android:id="@+id/textBarberInitial"
+                style="@style/TextAppearance_ArtBarbershop_CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_avatar_circle"
+                android:gravity="center"
+                android:textColor="@color/color_primary"
+                tools:text="M" />
+
+            <ImageView
+                android:id="@+id/imageBarberAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_avatar_circle"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/textBarberName"
@@ -36,8 +51,8 @@
             android:ellipsize="end"
             android:maxLines="1"
             app:layout_constraintEnd_toStartOf="@id/textBarberStatus"
-            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
-            app:layout_constraintTop_toTopOf="@id/textBarberInitial"
+            app:layout_constraintStart_toEndOf="@id/layoutBarberAvatar"
+            app:layout_constraintTop_toTopOf="@id/layoutBarberAvatar"
             tools:text="Michael" />
 
         <TextView
@@ -63,7 +78,7 @@
             android:maxLines="1"
             android:textColor="@color/color_text_secondary"
             app:layout_constraintEnd_toStartOf="@id/textBarberAvailableTime"
-            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
+            app:layout_constraintStart_toEndOf="@id/layoutBarberAvatar"
             app:layout_constraintTop_toBottomOf="@id/textBarberName"
             tools:text="8 years experience" />
 
@@ -89,7 +104,7 @@
             android:maxLines="1"
             android:textColor="@color/color_text_secondary"
             app:layout_constraintEnd_toStartOf="@id/buttonBarberAction"
-            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
+            app:layout_constraintStart_toEndOf="@id/layoutBarberAvatar"
             app:layout_constraintTop_toBottomOf="@id/textBarberExperience"
             tools:text="Specialty: Fade, Classic Cut" />
 
@@ -101,7 +116,7 @@
             android:layout_marginTop="@dimen/space_10"
             android:contentDescription="@string/filter_top_rated"
             android:src="@drawable/ic_star"
-            app:layout_constraintStart_toEndOf="@id/textBarberInitial"
+            app:layout_constraintStart_toEndOf="@id/layoutBarberAvatar"
             app:layout_constraintTop_toBottomOf="@id/textBarberSpecialty" />
 
         <TextView
