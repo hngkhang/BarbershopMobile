@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/color_bg"
     android:fitsSystemWindows="true"
-    tools:context=".SplashActivity">
+    tools:context=".util.SplashActivity">
 
     <LinearLayout
         android:id="@+id/splashBrandGroup"
