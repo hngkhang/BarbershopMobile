@@ -48,6 +48,28 @@ public final class ImageLoader {
         });
     }
 
+    public static void loadImage(ImageView imageView, String imageUrl, int placeholderRes) {
+        imageView.setImageResource(placeholderRes);
+
+        if (TextUtils.isEmpty(imageUrl)) {
+            imageView.setTag(null);
+            return;
+        }
+
+        imageView.setTag(imageUrl);
+        EXECUTOR.execute(() -> {
+            Bitmap bitmap = downloadBitmap(imageUrl);
+            MAIN_HANDLER.post(() -> {
+                Object currentTag = imageView.getTag();
+                if (bitmap == null || currentTag == null || !imageUrl.equals(currentTag.toString())) {
+                    return;
+                }
+
+                imageView.setImageBitmap(bitmap);
+            });
+        });
+    }
+
     private static Bitmap downloadBitmap(String imageUrl) {
         HttpURLConnection connection = null;
         try {
