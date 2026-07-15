@@ -62,6 +62,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         String barberExperience = readStringExtra(getIntent(), "barberExperience", "9+ years experience");
         String barberSpecialty = readStringExtra(getIntent(), "barberSpecialty", "Specialty: Classic Cut");
         String note = readStringExtra(getIntent(), "appointmentNote", getString(R.string.booking_default_note));
+        String createdAt = readStringExtra(getIntent(), "appointmentCreatedAt", "");
 
         ((TextView) findViewById(R.id.textAppointmentId)).setText(appointmentId);
         ((TextView) findViewById(R.id.textDetailBarberInitial)).setText(getInitial(barberName));
@@ -81,11 +82,10 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.textDetailPaymentMethod)).setText(detailText(getString(R.string.appointment_payment_method_label), paymentMethod));
         ((TextView) findViewById(R.id.textDetailNote)).setText(note);
 
-        ((TextView) findViewById(R.id.textTimelineBooked)).setText("Booked          May 20, 2025 - 09:41 AM");
-        ((TextView) findViewById(R.id.textTimelineConfirmed)).setText("Confirmed       May 20, 2025 - 09:43 AM");
-        ((TextView) findViewById(R.id.textTimelineReminder)).setText("Reminder Sent   May 23, 2025 - 09:00 AM");
+        ((TextView) findViewById(R.id.textTimelineBooked)).setText(createdAt.isEmpty() ? "Booked          Not available" : "Booked          " + createdAt);
+        ((TextView) findViewById(R.id.textTimelineConfirmed)).setText("Confirmed       Pending");
+        ((TextView) findViewById(R.id.textTimelineReminder)).setText("Reminder Sent   Pending");
         ((TextView) findViewById(R.id.textTimelineCurrent)).setText(String.format(Locale.US, "%s        %s - %s", appointmentStatus, appointmentDate, startTime));
-        // TODO: Replace timeline placeholder timestamps with real booking/reminder events from Firebase/SQLite.
     }
 
     private void setupActions() {

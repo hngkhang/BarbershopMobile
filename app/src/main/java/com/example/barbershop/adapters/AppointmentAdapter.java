@@ -155,6 +155,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         public final String paymentStatus;
         public final String paymentMethod;
         public final String note;
+        public final String createdAtText;
 
         public AppointmentItem(
                 String id,
@@ -173,6 +174,46 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 String paymentStatus,
                 String paymentMethod,
                 String note
+        ) {
+            this(
+                    id,
+                    day,
+                    date,
+                    fullDate,
+                    time,
+                    endTime,
+                    duration,
+                    barberName,
+                    barberExperience,
+                    barberSpecialty,
+                    serviceName,
+                    price,
+                    status,
+                    paymentStatus,
+                    paymentMethod,
+                    note,
+                    ""
+            );
+        }
+
+        public AppointmentItem(
+                String id,
+                String day,
+                String date,
+                String fullDate,
+                String time,
+                String endTime,
+                String duration,
+                String barberName,
+                String barberExperience,
+                String barberSpecialty,
+                String serviceName,
+                String price,
+                String status,
+                String paymentStatus,
+                String paymentMethod,
+                String note,
+                String createdAtText
         ) {
             this.id = id;
             this.day = day;
@@ -193,6 +234,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             this.paymentStatus = paymentStatus;
             this.paymentMethod = paymentMethod;
             this.note = note;
+            this.createdAtText = createdAtText;
         }
     }
 }
