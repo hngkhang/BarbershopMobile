@@ -2,6 +2,7 @@ package com.example.barbershop.adapters;
 
 import com.example.barbershop.R;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.barbershop.services.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +68,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
         ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
             imageContainer = itemView.findViewById(R.id.imageServiceContainer);
+            imageContainer.setClipToOutline(true);
             imageServiceIcon = itemView.findViewById(R.id.imageServiceIcon);
             textServiceName = itemView.findViewById(R.id.textServiceName);
             textServiceDescription = itemView.findViewById(R.id.textServiceDescription);
@@ -75,7 +79,8 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
 
         void bind(ServiceItem serviceItem, OnServiceClickListener listener) {
             imageContainer.setBackgroundResource(serviceItem.imageBackgroundRes);
-            imageServiceIcon.setImageResource(serviceItem.iconRes);
+            configureServiceImage(serviceItem);
+            ImageLoader.loadImage(imageServiceIcon, serviceItem.imageUrl, serviceItem.iconRes);
             imageServiceIcon.setContentDescription(
                     itemView.getContext().getString(R.string.service_image_content_description, serviceItem.name)
             );
@@ -85,6 +90,25 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
             textServicePrice.setText(serviceItem.price);
             buttonBookNow.setOnClickListener(v -> listener.onBookNowClick(serviceItem));
         }
+
+        private void configureServiceImage(ServiceItem serviceItem) {
+            boolean hasRemoteImage = !TextUtils.isEmpty(serviceItem.imageUrl);
+            FrameLayout.LayoutParams layoutParams =
+                    (FrameLayout.LayoutParams) imageServiceIcon.getLayoutParams();
+
+            if (hasRemoteImage) {
+                layoutParams.width = FrameLayout.LayoutParams.MATCH_PARENT;
+                layoutParams.height = FrameLayout.LayoutParams.MATCH_PARENT;
+                imageServiceIcon.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            } else {
+                int iconSize = itemView.getResources().getDimensionPixelSize(R.dimen.space_40);
+                layoutParams.width = iconSize;
+                layoutParams.height = iconSize;
+                imageServiceIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            }
+
+            imageServiceIcon.setLayoutParams(layoutParams);
+        }
     }
 
     public static class ServiceItem {
@@ -93,6 +117,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
         public final String duration;
         public final String price;
         public final String category;
+        public final String imageUrl;
         public final int imageBackgroundRes;
         public final int iconRes;
 
@@ -102,6 +127,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
                 String duration,
                 String price,
                 String category,
+                String imageUrl,
                 int imageBackgroundRes,
                 int iconRes
         ) {
@@ -110,6 +136,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
             this.duration = duration;
             this.price = price;
             this.category = category;
+            this.imageUrl = imageUrl;
             this.imageBackgroundRes = imageBackgroundRes;
             this.iconRes = iconRes;
         }

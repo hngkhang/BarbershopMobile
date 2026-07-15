@@ -39,6 +39,12 @@
     <string name="barber_avatar_content_description">%1$s avatar</string>
     <string name="services_empty_title">No services found</string>
     <string name="services_empty_message">Try another category or search term.</string>
+    <string name="services_load_failed">Unable to load services: %1$s</string>
+    <string name="service_description_default">Barbershop service</string>
+    <string name="service_description_category_format">%1$s service from Firebase</string>
+    <string name="service_duration_minutes_format">%1$d min</string>
+    <string name="service_price_whole_format">$%1$d.00</string>
+    <string name="service_price_decimal_format">$%1$.2f</string>
     <string name="barbers_empty_title">No barbers found</string>
     <string name="barbers_empty_message">Try another name or experience keyword.</string>
     <string name="barbers_load_failed">Unable to load barbers: %1$s</string>
@@ -254,8 +260,6 @@
     <string name="barber_profile_rating_format">Average rating: %1$.1f/5 (%2$d ratings)</string>
     <string name="barber_experience_years">%1$d years experience</string>
     <string name="barber_experience_not_updated">Experience not updated</string>
-    <string name="barbers_load_failed">Cannot load barbers: %1$s</string>
-    <string name="barber_not_found">Barber does not exist.</string>
     <string name="barber_invalid_data">Barber data is invalid.</string>
     <string name="barber_profile_load_failed">Cannot load barber profile: %1$s</string>
     <string name="rating_load_failed">Cannot load rating summary: %1$s</string>

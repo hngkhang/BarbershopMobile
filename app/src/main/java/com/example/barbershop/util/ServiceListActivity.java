@@ -18,9 +18,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.barbershop.adapters.ServiceAdapter;
+import com.example.barbershop.data.BarberRepository;
+import com.example.barbershop.data.ServiceRepository;
+import com.example.barbershop.models.ShopService;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,10 +31,11 @@ public class ServiceListActivity extends AppCompatActivity {
     private static final String FILTER_ALL = "All";
 
     private ServiceAdapter serviceAdapter;
+    private ServiceRepository serviceRepository;
     private EditText searchEditText;
     private View emptyState;
     private View loadingState;
-    private View errorState;
+    private TextView errorState;
     private String selectedCategory = FILTER_ALL;
     private final List<ServiceAdapter.ServiceItem> allServices = new ArrayList<>();
     private final List<TextView> filterChips = new ArrayList<>();
@@ -41,16 +44,18 @@ public class ServiceListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_service_list);
+        serviceRepository = new ServiceRepository();
 
         setupTopBar();
         setupRecyclerView();
         setupSearch();
         setupFilterChips();
+    }
 
-        showLoading(false);
-        // TODO: Replace this temporary in-memory sample data with Firebase/SQLite service data.
-        loadSampleServices();
-        applyFilters();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadServices();
     }
 
     private void setupTopBar() {
@@ -69,6 +74,7 @@ public class ServiceListActivity extends AppCompatActivity {
         serviceAdapter = new ServiceAdapter(this::openBookingIfAvailable);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(serviceAdapter);
+        errorState.setOnClickListener(v -> loadServices());
     }
 
     private void setupSearch() {
@@ -122,55 +128,25 @@ public class ServiceListActivity extends AppCompatActivity {
         }
     }
 
-    private void loadSampleServices() {
+    private void loadServices() {
+        showLoading(true);
         allServices.clear();
-        allServices.addAll(Arrays.asList(
-                new ServiceAdapter.ServiceItem(
-                        "Haircut",
-                        "Classic cut tailored to your style with precision and care.",
-                        "30 min",
-                        "$25.00",
-                        "Haircut",
-                        R.drawable.bg_service_tile_haircut,
-                        R.drawable.ic_scissors
-                ),
-                new ServiceAdapter.ServiceItem(
-                        "Shampoo",
-                        "Relaxing wash with premium products and scalp massage.",
-                        "15 min",
-                        "$12.00",
-                        "Shampoo",
-                        R.drawable.bg_service_tile_shampoo,
-                        R.drawable.ic_barber_pole
-                ),
-                new ServiceAdapter.ServiceItem(
-                        "Perm",
-                        "Natural waves or curls shaped for a fresh new look.",
-                        "60 min",
-                        "$60.00",
-                        "Perm",
-                        R.drawable.bg_service_tile_perm,
-                        R.drawable.ic_sparkle
-                ),
-                new ServiceAdapter.ServiceItem(
-                        "Coloring",
-                        "Professional hair coloring for a vibrant new you.",
-                        "45 min",
-                        "$50.00",
-                        "Coloring",
-                        R.drawable.bg_service_tile_coloring,
-                        R.drawable.ic_sparkle
-                ),
-                new ServiceAdapter.ServiceItem(
-                        "Combo Package",
-                        "Haircut, shampoo, and styling for complete grooming.",
-                        "60 min",
-                        "$55.00",
-                        "Combo",
-                        R.drawable.bg_service_tile_combo,
-                        R.drawable.ic_calendar
-                )
-        ));
+        serviceAdapter.submitList(new ArrayList<>());
+        serviceRepository.getAllServices(new BarberRepository.RepositoryCallback<List<ShopService>>() {
+            @Override
+            public void onSuccess(List<ShopService> data) {
+                allServices.clear();
+                for (ShopService service : data) {
+                    allServices.add(toServiceItem(service));
+                }
+                applyFilters();
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                showError(exception);
+            }
+        });
     }
 
     private void applyFilters() {
@@ -181,10 +157,11 @@ public class ServiceListActivity extends AppCompatActivity {
 
         for (ServiceAdapter.ServiceItem serviceItem : allServices) {
             boolean matchesCategory = FILTER_ALL.equals(selectedCategory)
-                    || serviceItem.category.equals(selectedCategory);
+                    || serviceItem.category.equalsIgnoreCase(selectedCategory);
             boolean matchesQuery = query.isEmpty()
                     || serviceItem.name.toLowerCase(Locale.US).contains(query)
-                    || serviceItem.description.toLowerCase(Locale.US).contains(query);
+                    || serviceItem.description.toLowerCase(Locale.US).contains(query)
+                    || serviceItem.category.toLowerCase(Locale.US).contains(query);
 
             if (matchesCategory && matchesQuery) {
                 filteredServices.add(serviceItem);
@@ -205,6 +182,94 @@ public class ServiceListActivity extends AppCompatActivity {
         loadingState.setVisibility(View.GONE);
         errorState.setVisibility(View.GONE);
         emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
+    }
+
+    private void showError(Exception exception) {
+        loadingState.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
+        errorState.setVisibility(View.VISIBLE);
+        String message = exception == null || exception.getMessage() == null
+                ? getString(R.string.state_error_placeholder)
+                : exception.getMessage();
+        errorState.setText(getString(R.string.services_load_failed, message));
+    }
+
+    private ServiceAdapter.ServiceItem toServiceItem(ShopService service) {
+        String category = formatCategory(service.getCategory());
+        return new ServiceAdapter.ServiceItem(
+                fallback(service.getName(), category),
+                buildDescription(category),
+                formatDuration(service.getTimeMinutes()),
+                formatPrice(service.getPrice()),
+                category,
+                service.getImageUrl(),
+                getServiceBackground(category),
+                getServiceIcon(category)
+        );
+    }
+
+    private String buildDescription(String category) {
+        return category.isEmpty()
+                ? getString(R.string.service_description_default)
+                : getString(R.string.service_description_category_format, category);
+    }
+
+    private String formatDuration(int minutes) {
+        return getString(R.string.service_duration_minutes_format, Math.max(minutes, 0));
+    }
+
+    private String formatPrice(double price) {
+        if (Math.abs(price - Math.round(price)) < 0.0001) {
+            return getString(R.string.service_price_whole_format, Math.round(price));
+        }
+
+        return getString(R.string.service_price_decimal_format, price);
+    }
+
+    private String formatCategory(String category) {
+        if (category == null || category.trim().isEmpty()) {
+            return "";
+        }
+
+        String normalized = category.trim().toLowerCase(Locale.US);
+        return normalized.substring(0, 1).toUpperCase(Locale.US) + normalized.substring(1);
+    }
+
+    private String fallback(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value.trim();
+    }
+
+    private int getServiceBackground(String category) {
+        String normalizedCategory = category.toLowerCase(Locale.US);
+        if (normalizedCategory.contains("shampoo")) {
+            return R.drawable.bg_service_tile_shampoo;
+        }
+        if (normalizedCategory.contains("perm")) {
+            return R.drawable.bg_service_tile_perm;
+        }
+        if (normalizedCategory.contains("color")) {
+            return R.drawable.bg_service_tile_coloring;
+        }
+        if (normalizedCategory.contains("combo")) {
+            return R.drawable.bg_service_tile_combo;
+        }
+
+        return R.drawable.bg_service_tile_haircut;
+    }
+
+    private int getServiceIcon(String category) {
+        String normalizedCategory = category.toLowerCase(Locale.US);
+        if (normalizedCategory.contains("shampoo")) {
+            return R.drawable.ic_barber_pole;
+        }
+        if (normalizedCategory.contains("perm") || normalizedCategory.contains("color")) {
+            return R.drawable.ic_sparkle;
+        }
+        if (normalizedCategory.contains("combo")) {
+            return R.drawable.ic_calendar;
+        }
+
+        return R.drawable.ic_scissors;
     }
 
     private void openBookingIfAvailable(ServiceAdapter.ServiceItem serviceItem) {
