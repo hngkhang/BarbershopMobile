@@ -1,4 +1,6 @@
-package com.example.barbershop;
+package com.example.barbershop.util;
+
+import com.example.barbershop.R;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,8 +16,12 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+<<<<<<< HEAD:app/src/main/java/com/example/barbershop/BarberListActivity.java
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+=======
+import com.example.barbershop.adapters.BarberAdapter;
+>>>>>>> origin:app/src/main/java/com/example/barbershop/util/BarberListActivity.java
 
 import java.util.ArrayList;
 import java.util.HashMap;

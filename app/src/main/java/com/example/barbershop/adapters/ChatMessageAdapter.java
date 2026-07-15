@@ -1,4 +1,6 @@
-package com.example.barbershop;
+package com.example.barbershop.adapters;
+
+import com.example.barbershop.R;
 
 import android.view.LayoutInflater;
 import android.view.View;
