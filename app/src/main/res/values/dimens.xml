@@ -43,6 +43,7 @@
     <dimen name="barber_card_min_height">116dp</dimen>
     <dimen name="service_action_button_width">88dp</dimen>
     <dimen name="list_action_button_width">104dp</dimen>
+    <dimen name="appointment_detail_button_width">76dp</dimen>
     <dimen name="booking_step_size">28dp</dimen>
     <dimen name="booking_date_chip_width">64dp</dimen>
     <dimen name="booking_time_slot_width">84dp</dimen>

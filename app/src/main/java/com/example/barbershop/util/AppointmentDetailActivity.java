@@ -4,6 +4,7 @@ import com.example.barbershop.R;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,17 +41,17 @@ public class AppointmentDetailActivity extends AppCompatActivity {
 
     private void readAppointmentExtras() {
         Intent intent = getIntent();
-        appointmentId = readStringExtra(intent, "appointmentId", "#AB25678");
-        appointmentStatus = readStringExtra(intent, "appointmentStatus", AppointmentAdapter.AppointmentItem.STATUS_UPCOMING);
-        barberName = readStringExtra(intent, "barberName", "Michael");
-        serviceName = readStringExtra(intent, "serviceName", "Haircut, Classic Cut");
-        price = readStringExtra(intent, "appointmentPrice", "$25.00");
-        appointmentDate = readStringExtra(intent, "appointmentDate", "Sat, May 24, 2025");
-        startTime = readStringExtra(intent, "appointmentStartTime", "11:00 AM");
-        endTime = readStringExtra(intent, "appointmentEndTime", "11:45 AM");
-        duration = readStringExtra(intent, "appointmentDuration", "45 min");
-        paymentStatus = readStringExtra(intent, "paymentStatus", getString(R.string.appointment_payment_paid));
-        paymentMethod = readStringExtra(intent, "paymentMethod", "Card **** 4567");
+        appointmentId = readStringExtra(intent, "appointmentId");
+        appointmentStatus = readStringExtra(intent, "appointmentStatus");
+        barberName = readStringExtra(intent, "barberName");
+        serviceName = readStringExtra(intent, "serviceName");
+        price = readStringExtra(intent, "appointmentPrice");
+        appointmentDate = readStringExtra(intent, "appointmentDate");
+        startTime = readStringExtra(intent, "appointmentStartTime");
+        endTime = readStringExtra(intent, "appointmentEndTime");
+        duration = readStringExtra(intent, "appointmentDuration");
+        paymentStatus = readStringExtra(intent, "paymentStatus");
+        paymentMethod = readStringExtra(intent, "paymentMethod");
     }
 
     private void bindAppointmentDetails() {
@@ -59,9 +60,10 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         statusView.setBackgroundResource(statusBackground(appointmentStatus));
         statusView.setTextColor(ContextCompat.getColor(this, statusColor(appointmentStatus)));
 
-        String barberExperience = readStringExtra(getIntent(), "barberExperience", "9+ years experience");
-        String barberSpecialty = readStringExtra(getIntent(), "barberSpecialty", "Specialty: Classic Cut");
-        String note = readStringExtra(getIntent(), "appointmentNote", getString(R.string.booking_default_note));
+        String barberExperience = readStringExtra(getIntent(), "barberExperience");
+        String barberSpecialty = readStringExtra(getIntent(), "barberSpecialty");
+        String note = readStringExtra(getIntent(), "appointmentNote");
+        String createdAt = readStringExtra(getIntent(), "appointmentCreatedAt");
 
         ((TextView) findViewById(R.id.textAppointmentId)).setText(appointmentId);
         ((TextView) findViewById(R.id.textDetailBarberInitial)).setText(getInitial(barberName));
@@ -77,15 +79,33 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.textDetailStartTime)).setText(detailText(getString(R.string.appointment_start_time_label), startTime));
         ((TextView) findViewById(R.id.textDetailEndTime)).setText(detailText(getString(R.string.appointment_end_time_label), endTime));
         ((TextView) findViewById(R.id.textDetailDuration)).setText(detailText(getString(R.string.appointment_duration_label), duration));
-        ((TextView) findViewById(R.id.textDetailPaymentStatus)).setText(detailText(getString(R.string.appointment_payment_status_label), paymentStatus));
-        ((TextView) findViewById(R.id.textDetailPaymentMethod)).setText(detailText(getString(R.string.appointment_payment_method_label), paymentMethod));
-        ((TextView) findViewById(R.id.textDetailNote)).setText(note);
+        ((TextView) findViewById(R.id.textDetailNote)).setText(
+                note.isEmpty() ? getString(R.string.booking_no_note) : note
+        );
 
-        ((TextView) findViewById(R.id.textTimelineBooked)).setText("Booked          May 20, 2025 - 09:41 AM");
-        ((TextView) findViewById(R.id.textTimelineConfirmed)).setText("Confirmed       May 20, 2025 - 09:43 AM");
-        ((TextView) findViewById(R.id.textTimelineReminder)).setText("Reminder Sent   May 23, 2025 - 09:00 AM");
-        ((TextView) findViewById(R.id.textTimelineCurrent)).setText(String.format(Locale.US, "%s        %s - %s", appointmentStatus, appointmentDate, startTime));
-        // TODO: Replace timeline placeholder timestamps with real booking/reminder events from Firebase/SQLite.
+        boolean hasPaymentData = !paymentStatus.isEmpty() || !paymentMethod.isEmpty();
+        findViewById(R.id.textDetailPaymentStatus).setVisibility(hasPaymentData ? View.VISIBLE : View.GONE);
+        findViewById(R.id.textDetailPaymentMethod).setVisibility(hasPaymentData ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonViewPayment).setVisibility(hasPaymentData ? View.VISIBLE : View.GONE);
+        if (hasPaymentData) {
+            ((TextView) findViewById(R.id.textDetailPaymentStatus)).setText(
+                    detailText(getString(R.string.appointment_payment_status_label), paymentStatus)
+            );
+            ((TextView) findViewById(R.id.textDetailPaymentMethod)).setText(
+                    detailText(getString(R.string.appointment_payment_method_label), paymentMethod)
+            );
+        }
+
+        TextView bookedTimeline = findViewById(R.id.textTimelineBooked);
+        bookedTimeline.setVisibility(createdAt.isEmpty() ? View.GONE : View.VISIBLE);
+        if (!createdAt.isEmpty()) {
+            bookedTimeline.setText(String.format(Locale.US, "Booked          %s", createdAt));
+        }
+        findViewById(R.id.textTimelineConfirmed).setVisibility(View.GONE);
+        findViewById(R.id.textTimelineReminder).setVisibility(View.GONE);
+        ((TextView) findViewById(R.id.textTimelineCurrent)).setText(
+                String.format(Locale.US, "%s        %s - %s", appointmentStatus, appointmentDate, startTime)
+        );
     }
 
     private void setupActions() {
@@ -100,7 +120,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         });
         findViewById(R.id.buttonViewPayment).setOnClickListener(v -> openPayment());
         findViewById(R.id.buttonCancelAppointment).setOnClickListener(v -> {
-            // TODO: Connect cancellation to the real appointment booking flow.
+            // Cancellation will be connected to the Firestore booking flow separately.
             Toast.makeText(this, R.string.appointment_cancel_todo, Toast.LENGTH_SHORT).show();
         });
     }
@@ -116,9 +136,9 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private String readStringExtra(Intent intent, String key, String fallback) {
+    private String readStringExtra(Intent intent, String key) {
         String value = intent.getStringExtra(key);
-        return value == null || value.trim().isEmpty() ? fallback : value;
+        return value == null ? "" : value.trim();
     }
 
     private String detailText(String label, String value) {
@@ -127,7 +147,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
 
     private String getInitial(String value) {
         return value == null || value.trim().isEmpty()
-                ? "A"
+                ? ""
                 : value.trim().substring(0, 1).toUpperCase(Locale.US);
     }
 
@@ -135,7 +155,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         try {
             return Integer.parseInt(value.replaceAll("[^0-9]", ""));
         } catch (NumberFormatException exception) {
-            return 45;
+            return 0;
         }
     }
 

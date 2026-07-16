@@ -21,13 +21,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.barbershop.data.BarberRepository;
+import com.example.barbershop.data.AppointmentRepository;
 import com.example.barbershop.data.ServiceRepository;
+import com.example.barbershop.models.Appointment;
+import com.example.barbershop.models.Barber;
 import com.example.barbershop.models.ShopService;
 import com.example.barbershop.services.ImageLoader;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -47,9 +55,12 @@ public class HomeActivity extends AppCompatActivity {
 
     private FirebaseFirestore firestore;
     private ServiceRepository serviceRepository;
+    private BarberRepository barberRepository;
+    private AppointmentRepository appointmentRepository;
     private FeaturedBarberAdapter featuredBarberAdapter;
     private final List<ShopService> homeServices = new ArrayList<>();
     private final List<FeaturedBarber> featuredBarbers = new ArrayList<>();
+    private HomeAppointment upcomingAppointment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +69,8 @@ public class HomeActivity extends AppCompatActivity {
 
         firestore = FirebaseFirestore.getInstance();
         serviceRepository = new ServiceRepository();
+        barberRepository = new BarberRepository();
+        appointmentRepository = new AppointmentRepository();
 
         setupFeaturedBarbers();
         setupDashboardActions();
@@ -69,6 +82,7 @@ public class HomeActivity extends AppCompatActivity {
         super.onResume();
         loadHomeServices();
         loadFeaturedBarbers();
+        loadUpcomingAppointment();
     }
 
     private void setupFeaturedBarbers() {
@@ -97,7 +111,6 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.textViewAllServices).setOnClickListener(view -> openServices());
         findViewById(R.id.textViewAllBarbers).setOnClickListener(view -> openBarbers());
 
-        setupDefaultServiceClicks();
     }
 
     private void setupBottomNavigation() {
@@ -108,13 +121,6 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.homeNavProfile).setOnClickListener(view ->
                 startActivity(new Intent(this, ProfileActivity.class))
         );
-    }
-
-    private void setupDefaultServiceClicks() {
-        LinearLayout serviceRow = findViewById(R.id.serviceRow);
-        for (int index = 0; index < serviceRow.getChildCount(); index++) {
-            serviceRow.getChildAt(index).setOnClickListener(view -> openServices());
-        }
     }
 
     private void loadHomeServices() {
@@ -154,7 +160,6 @@ public class HomeActivity extends AppCompatActivity {
     private void bindServiceSlot(LinearLayout serviceSlot, ShopService service) {
         String category = formatCategory(service.getCategory());
         String serviceName = fallback(service.getName(), fallback(category, "Service"));
-        String servicePrice = formatPrice(service.getPrice());
         FrameLayout imageContainer = (FrameLayout) serviceSlot.getChildAt(0);
         ImageView imageView = (ImageView) imageContainer.getChildAt(0);
         TextView textName = (TextView) serviceSlot.getChildAt(1);
@@ -165,9 +170,7 @@ public class HomeActivity extends AppCompatActivity {
         ImageLoader.loadImage(imageView, service.getImageUrl(), getServiceIcon(category));
         imageView.setContentDescription(getString(R.string.service_image_content_description, serviceName));
         textName.setText(serviceName);
-        serviceSlot.setOnClickListener(view ->
-                openBooking(serviceName, servicePrice, getPrimaryBarberName())
-        );
+        serviceSlot.setOnClickListener(view -> openBooking(service));
     }
 
     private void configureHomeServiceImage(ImageView imageView, String imageUrl) {
@@ -299,30 +302,163 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void openBooking(String serviceName, String servicePrice, String barberName) {
-        Intent intent = new Intent(this, BookingActivity.class);
-        intent.putExtra("selectedServiceName", serviceName);
-        intent.putExtra("selectedServicePrice", servicePrice);
-        intent.putExtra("selectedBarberName", barberName);
-        startActivity(intent);
+    private void openBooking(ShopService service) {
+        try {
+            Intent intent = new Intent(this, BookingActivity.class);
+            intent.putExtra(BookingActivity.EXTRA_SERVICE_ID, Long.parseLong(service.getServiceId()));
+            startActivity(intent);
+        } catch (NumberFormatException exception) {
+            Toast.makeText(this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadUpcomingAppointment() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            bindUpcomingAppointment(null);
+            return;
+        }
+
+        appointmentRepository.getAppointmentsForUser(user.getUid(),
+                new AppointmentRepository.RepositoryCallback<List<Appointment>>() {
+                    @Override
+                    public void onSuccess(List<Appointment> appointments) {
+                        Appointment nextAppointment = findNextUpcomingAppointment(appointments);
+                        if (nextAppointment == null) {
+                            bindUpcomingAppointment(null);
+                            return;
+                        }
+                        loadUpcomingAppointmentDetails(nextAppointment);
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        bindUpcomingAppointment(null);
+                    }
+                });
+    }
+
+    private Appointment findNextUpcomingAppointment(List<Appointment> appointments) {
+        List<Appointment> upcoming = new ArrayList<>();
+        long now = System.currentTimeMillis();
+        for (Appointment appointment : appointments) {
+            if ("UPCOMING".equalsIgnoreCase(appointment.getStatus())
+                    && appointment.getStartAt() != null
+                    && appointment.getEndAt() != null
+                    && appointment.getStartAt().toDate().getTime() >= now) {
+                upcoming.add(appointment);
+            }
+        }
+        Collections.sort(upcoming, Comparator.comparingLong(
+                appointment -> appointment.getStartAt().toDate().getTime()
+        ));
+        return upcoming.isEmpty() ? null : upcoming.get(0);
+    }
+
+    private void loadUpcomingAppointmentDetails(Appointment appointment) {
+        serviceRepository.getServiceById(appointment.getServiceId(),
+                new BarberRepository.RepositoryCallback<ShopService>() {
+                    @Override
+                    public void onSuccess(ShopService service) {
+                        barberRepository.getAllBarbers(new BarberRepository.RepositoryCallback<List<Barber>>() {
+                            @Override
+                            public void onSuccess(List<Barber> barbers) {
+                                bindUpcomingAppointment(new HomeAppointment(
+                                        appointment,
+                                        service,
+                                        findBarberById(barbers, appointment.getBarberId())
+                                ));
+                            }
+
+                            @Override
+                            public void onError(Exception exception) {
+                                bindUpcomingAppointment(new HomeAppointment(appointment, service, null));
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        bindUpcomingAppointment(new HomeAppointment(appointment, null, null));
+                    }
+                });
+    }
+
+    private Barber findBarberById(List<Barber> barbers, long barberId) {
+        for (Barber barber : barbers) {
+            if (String.valueOf(barberId).equals(barber.getBarberId())) {
+                return barber;
+            }
+        }
+        return null;
+    }
+
+    private void bindUpcomingAppointment(HomeAppointment appointment) {
+        upcomingAppointment = appointment;
+        View card = findViewById(R.id.cardUpcomingAppointment);
+        if (appointment == null) {
+            card.setVisibility(View.GONE);
+            return;
+        }
+
+        card.setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.textHomeUpcomingDate)).setText(
+                formatHomeAppointmentDate(appointment.appointment.getStartAt())
+        );
+        ((TextView) findViewById(R.id.textHomeUpcomingService)).setText(
+                appointment.service == null ? "" : appointment.service.getName()
+        );
+        ((TextView) findViewById(R.id.textHomeUpcomingBarber)).setText(
+                getString(R.string.home_upcoming_with_barber,
+                        appointment.barber == null
+                                ? getString(R.string.barber_name_unknown)
+                                : appointment.barber.getName())
+        );
+        ((TextView) findViewById(R.id.textHomeUpcomingStatus)).setText(
+                R.string.appointment_status_upcoming
+        );
+    }
+
+    private String formatHomeAppointmentDate(Timestamp timestamp) {
+        return timestamp == null ? "" : new java.text.SimpleDateFormat(
+                "EEE, MMM d · h:mm a", Locale.US
+        ).format(timestamp.toDate());
     }
 
     private void openUpcomingAppointment() {
+        if (upcomingAppointment == null) {
+            openAppointments();
+            return;
+        }
+
+        Appointment appointment = upcomingAppointment.appointment;
         Intent intent = new Intent(this, AppointmentDetailActivity.class);
-        intent.putExtra("appointmentId", "#AB25678");
-        intent.putExtra("appointmentStatus", "Upcoming");
-        intent.putExtra("barberName", "Michael");
-        intent.putExtra("barberExperience", "9+ years experience");
-        intent.putExtra("barberSpecialty", "Specialty: Classic Cut");
-        intent.putExtra("serviceName", "Haircut, Classic Cut");
-        intent.putExtra("appointmentPrice", "$25.00");
-        intent.putExtra("appointmentDate", "Sat, May 24, 2025");
-        intent.putExtra("appointmentStartTime", "11:00 AM");
-        intent.putExtra("appointmentEndTime", "11:45 AM");
-        intent.putExtra("appointmentDuration", "45 min");
-        intent.putExtra("paymentStatus", getString(R.string.appointment_payment_paid));
-        intent.putExtra("paymentMethod", "Card **** 4567");
+        intent.putExtra("appointmentId", appointment.getDocumentId());
+        intent.putExtra("appointmentStatus", getString(R.string.appointment_status_upcoming));
+        intent.putExtra("barberName", upcomingAppointment.barber == null ? "" : upcomingAppointment.barber.getName());
+        intent.putExtra("barberExperience", upcomingAppointment.barber == null ? "" : upcomingAppointment.barber.getExperience());
+        intent.putExtra("barberSpecialty", getString(R.string.barber_specialty_not_available));
+        intent.putExtra("serviceName", upcomingAppointment.service == null ? "" : upcomingAppointment.service.getName());
+        intent.putExtra("appointmentPrice", upcomingAppointment.service == null ? "" : formatPrice(upcomingAppointment.service.getPrice()));
+        intent.putExtra("appointmentDate", formatHomeAppointmentDate(appointment.getStartAt()));
+        intent.putExtra("appointmentStartTime", formatAppointmentTime(appointment.getStartAt()));
+        intent.putExtra("appointmentEndTime", formatAppointmentTime(appointment.getEndAt()));
+        intent.putExtra("appointmentDuration", formatAppointmentDuration(appointment.getStartAt(), appointment.getEndAt()));
+        intent.putExtra("appointmentNote", appointment.getNote());
         startActivity(intent);
+    }
+
+    private String formatAppointmentTime(Timestamp timestamp) {
+        return timestamp == null ? "" : new java.text.SimpleDateFormat("h:mm a", Locale.US)
+                .format(timestamp.toDate());
+    }
+
+    private String formatAppointmentDuration(Timestamp startAt, Timestamp endAt) {
+        if (startAt == null || endAt == null) {
+            return "";
+        }
+        long minutes = Math.max(0L, (endAt.toDate().getTime() - startAt.toDate().getTime()) / 60_000L);
+        return String.format(Locale.US, "%d min", minutes);
     }
 
     private void openServices() {
@@ -345,9 +481,6 @@ public class HomeActivity extends AppCompatActivity {
         ((ScrollView) findViewById(R.id.homeScroll)).smoothScrollTo(0, 0);
     }
 
-    private String getPrimaryBarberName() {
-        return featuredBarbers.isEmpty() ? null : featuredBarbers.get(0).name;
-    }
 
     private Long readLong(Object value) {
         return value instanceof Number ? ((Number) value).longValue() : null;
@@ -478,6 +611,18 @@ public class HomeActivity extends AppCompatActivity {
             this.experience = experience;
             this.averageRating = averageRating;
             this.ratingCount = ratingCount;
+        }
+    }
+
+    private static class HomeAppointment {
+        final Appointment appointment;
+        final ShopService service;
+        final Barber barber;
+
+        HomeAppointment(Appointment appointment, ShopService service, Barber barber) {
+            this.appointment = appointment;
+            this.service = service;
+            this.barber = barber;
         }
     }
 

@@ -193,9 +193,21 @@ public class BarberListActivity extends AppCompatActivity {
 
     private void openBookingIfAvailable(Barber barber) {
         try {
+            if (getIntent().getBooleanExtra(BookingActivity.EXTRA_BARBER_SELECTION_MODE, false)) {
+                long barberId = Long.parseLong(barber.getBarberId());
+                Intent result = new Intent();
+                result.putExtra(BookingActivity.EXTRA_BARBER_ID, barberId);
+                result.putExtra(BookingActivity.EXTRA_BARBER_NAME, barber.getName());
+                result.putExtra(BookingActivity.EXTRA_BARBER_EXPERIENCE, barber.getExperience());
+                setResult(RESULT_OK, result);
+                finish();
+                return;
+            }
             Intent intent = new Intent(this, BarberDetailActivity.class);
             intent.putExtra(EXTRA_BARBER_ID, barber.getId());
             startActivity(intent);
+        } catch (NumberFormatException exception) {
+            Toast.makeText(this, R.string.barber_invalid_data, Toast.LENGTH_SHORT).show();
         } catch (ActivityNotFoundException exception) {
             Toast.makeText(this, getString(R.string.nav_target_not_registered), Toast.LENGTH_SHORT).show();
         }

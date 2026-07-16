@@ -15,12 +15,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.barbershop.adapters.AppointmentAdapter;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class AppointmentActivity extends AppCompatActivity {
 
@@ -29,6 +37,8 @@ public class AppointmentActivity extends AppCompatActivity {
     private View emptyState;
     private View loadingState;
     private View errorState;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseFirestore firestore;
     private final List<AppointmentAdapter.AppointmentItem> allAppointments = new ArrayList<>();
     private final List<TextView> statusChips = new ArrayList<>();
 
@@ -37,15 +47,19 @@ public class AppointmentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment);
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
+
         setupTopBar();
         setupRecyclerView();
         setupStatusChips();
         setupBottomNavigation();
+    }
 
-        showLoading(false);
-        // TODO: Replace this temporary in-memory sample data with Firebase/SQLite appointment data.
-        loadSampleAppointments();
-        applyStatusFilter();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadAppointments();
     }
 
     private void setupTopBar() {
@@ -66,11 +80,13 @@ public class AppointmentActivity extends AppCompatActivity {
         appointmentAdapter = new AppointmentAdapter(this::openAppointmentDetail);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(appointmentAdapter);
+        errorState.setOnClickListener(v -> loadAppointments());
     }
 
     private void setupStatusChips() {
         addStatusChip(R.id.chipUpcoming, AppointmentAdapter.AppointmentItem.STATUS_UPCOMING);
-        addStatusChip(R.id.chipPending, AppointmentAdapter.AppointmentItem.STATUS_PENDING);
+        // The current Firestore schema does not contain a PENDING state.
+        findViewById(R.id.chipPending).setVisibility(View.GONE);
         addStatusChip(R.id.chipCompleted, AppointmentAdapter.AppointmentItem.STATUS_COMPLETED);
         addStatusChip(R.id.chipCancelled, AppointmentAdapter.AppointmentItem.STATUS_CANCELLED);
         updateChipSelection();
@@ -98,55 +114,116 @@ public class AppointmentActivity extends AppCompatActivity {
         }
     }
 
-    private void loadSampleAppointments() {
+    private void loadAppointments() {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            allAppointments.clear();
+            appointmentAdapter.submitList(new ArrayList<>());
+            showError(getString(R.string.appointment_login_required));
+            return;
+        }
+
+        showLoading(true);
+        firestore.collection("appointments")
+                .whereEqualTo("userUid", currentUser.getUid())
+                .get()
+                .addOnSuccessListener(snapshot -> loadLookupData(snapshot.getDocuments()))
+                .addOnFailureListener(this::showError);
+    }
+
+    private void loadLookupData(List<DocumentSnapshot> appointmentDocuments) {
+        firestore.collection("barbers")
+                .get()
+                .addOnSuccessListener(barberSnapshot -> {
+                    Map<String, BarberInfo> barbersById = new HashMap<>();
+                    for (DocumentSnapshot document : barberSnapshot.getDocuments()) {
+                        String barberId = normalizedId(document.get("barberId"));
+                        if (!barberId.isEmpty()) {
+                            barbersById.put(barberId, new BarberInfo(
+                                    readString(document, "name"),
+                                    readString(document, "experience")
+                            ));
+                        }
+                    }
+                    loadServices(appointmentDocuments, barbersById);
+                })
+                .addOnFailureListener(this::showError);
+    }
+
+    private void loadServices(
+            List<DocumentSnapshot> appointmentDocuments,
+            Map<String, BarberInfo> barbersById
+    ) {
+        firestore.collection("services")
+                .get()
+                .addOnSuccessListener(serviceSnapshot -> {
+                    Map<String, ServiceInfo> servicesById = new HashMap<>();
+                    for (DocumentSnapshot document : serviceSnapshot.getDocuments()) {
+                        String serviceId = normalizedId(document.get("serviceId"));
+                        if (!serviceId.isEmpty()) {
+                            servicesById.put(serviceId, new ServiceInfo(
+                                    readString(document, "name"),
+                                    readNumber(document, "price")
+                            ));
+                        }
+                    }
+                    bindAppointments(appointmentDocuments, barbersById, servicesById);
+                })
+                .addOnFailureListener(this::showError);
+    }
+
+    private void bindAppointments(
+            List<DocumentSnapshot> appointmentDocuments,
+            Map<String, BarberInfo> barbersById,
+            Map<String, ServiceInfo> servicesById
+    ) {
+        List<AppointmentAdapter.AppointmentItem> loadedAppointments = new ArrayList<>();
+        List<DocumentSnapshot> sortedDocuments = new ArrayList<>(appointmentDocuments);
+        Collections.sort(sortedDocuments, (left, right) -> {
+            Timestamp leftStartAt = left.getTimestamp("startAt");
+            Timestamp rightStartAt = right.getTimestamp("startAt");
+            if (leftStartAt == null) {
+                return rightStartAt == null ? 0 : 1;
+            }
+            if (rightStartAt == null) {
+                return -1;
+            }
+            return rightStartAt.compareTo(leftStartAt);
+        });
+
+        for (DocumentSnapshot document : sortedDocuments) {
+            Timestamp startAt = document.getTimestamp("startAt");
+            Timestamp endAt = document.getTimestamp("endAt");
+            if (startAt == null || endAt == null) {
+                continue;
+            }
+
+            BarberInfo barber = barbersById.get(normalizedId(document.get("barberId")));
+            ServiceInfo service = servicesById.get(normalizedId(document.get("serviceId")));
+            loadedAppointments.add(new AppointmentAdapter.AppointmentItem(
+                    document.getId(),
+                    formatTimestamp(startAt, "EEE"),
+                    formatTimestamp(startAt, "MMM d"),
+                    formatTimestamp(startAt, "EEE, MMM d, yyyy"),
+                    formatTimestamp(startAt, "h:mm a"),
+                    formatTimestamp(endAt, "h:mm a"),
+                    durationLabel(startAt, endAt),
+                    barber == null ? "" : barber.name,
+                    barber == null ? getString(R.string.barber_experience_not_updated) : barber.experience,
+                    getString(R.string.barber_specialty_not_available),
+                    service == null ? "" : service.name,
+                    service == null ? "" : formatPrice(service.price),
+                    displayStatus(readString(document, "status")),
+                    "",
+                    "",
+                    readString(document, "note"),
+                    formatTimestamp(document.getTimestamp("createdAt"), "MMM d, yyyy - h:mm a")
+            ));
+        }
+
         allAppointments.clear();
-        allAppointments.addAll(Arrays.asList(
-                new AppointmentAdapter.AppointmentItem(
-                        "#AB25678", "Sat", "May 24", "Sat, May 24, 2025",
-                        "11:00 AM", "11:45 AM", "45 min", "Michael",
-                        "9+ years experience", "Specialty: Classic Cut",
-                        "Haircut, Classic Cut", "$25.00",
-                        AppointmentAdapter.AppointmentItem.STATUS_UPCOMING,
-                        getString(R.string.appointment_payment_paid),
-                        "Card **** 4567", getString(R.string.booking_default_note)
-                ),
-                new AppointmentAdapter.AppointmentItem(
-                        "#AB25679", "Wed", "May 22", "Wed, May 22, 2025",
-                        "2:00 PM", "2:45 PM", "45 min", "David",
-                        "7 years experience", "Specialty: Haircut, Beard",
-                        "Haircut, Beard", "$37.00",
-                        AppointmentAdapter.AppointmentItem.STATUS_UPCOMING,
-                        getString(R.string.appointment_payment_paid),
-                        "Card **** 4567", getString(R.string.booking_no_note)
-                ),
-                new AppointmentAdapter.AppointmentItem(
-                        "#AB25680", "Tue", "May 20", "Tue, May 20, 2025",
-                        "10:00 AM", "10:45 AM", "45 min", "James",
-                        "6 years experience", "Specialty: Shampoo, Styling",
-                        "Haircut, Shampoo", "$37.00",
-                        AppointmentAdapter.AppointmentItem.STATUS_PENDING,
-                        getString(R.string.appointment_payment_not_paid),
-                        "Pending", "Please prepare a natural finish."
-                ),
-                new AppointmentAdapter.AppointmentItem(
-                        "#AB25681", "Sun", "May 18", "Sun, May 18, 2025",
-                        "12:00 PM", "1:15 PM", "75 min", "Sophia",
-                        "8 years experience", "Specialty: Coloring, Perm",
-                        "Coloring, Perm", "$80.00",
-                        AppointmentAdapter.AppointmentItem.STATUS_COMPLETED,
-                        getString(R.string.appointment_payment_paid),
-                        "Card **** 4567", getString(R.string.booking_no_note)
-                ),
-                new AppointmentAdapter.AppointmentItem(
-                        "#AB25682", "Fri", "May 16", "Fri, May 16, 2025",
-                        "4:00 PM", "4:45 PM", "45 min", "Ethan",
-                        "5 years experience", "Specialty: Fade, Classic Cut",
-                        "Haircut, Fade", "$30.00",
-                        AppointmentAdapter.AppointmentItem.STATUS_CANCELLED,
-                        getString(R.string.appointment_payment_refunded),
-                        "Refunded", getString(R.string.booking_no_note)
-                )
-        ));
+        allAppointments.addAll(loadedAppointments);
+        applyStatusFilter();
     }
 
     private void applyStatusFilter() {
@@ -160,6 +237,49 @@ public class AppointmentActivity extends AppCompatActivity {
         showContentState(filteredAppointments.isEmpty());
     }
 
+    private String displayStatus(String firebaseStatus) {
+        String normalizedStatus = firebaseStatus.trim().toUpperCase(Locale.US);
+        if ("COMPLETED".equals(normalizedStatus)) {
+            return AppointmentAdapter.AppointmentItem.STATUS_COMPLETED;
+        } else if ("CANCELLED".equals(normalizedStatus)) {
+            return AppointmentAdapter.AppointmentItem.STATUS_CANCELLED;
+        }
+        return AppointmentAdapter.AppointmentItem.STATUS_UPCOMING;
+    }
+
+    private String durationLabel(Timestamp startAt, Timestamp endAt) {
+        long durationMinutes = Math.max(0L, (endAt.toDate().getTime() - startAt.toDate().getTime()) / 60000L);
+        return String.format(Locale.US, "%d min", durationMinutes);
+    }
+
+    private String formatTimestamp(Timestamp timestamp, String pattern) {
+        if (timestamp == null) {
+            return "";
+        }
+        return new SimpleDateFormat(pattern, Locale.US).format(timestamp.toDate());
+    }
+
+    private String formatPrice(Double price) {
+        return price == null ? "" : String.format(Locale.US, "$%.2f", price);
+    }
+
+    private String normalizedId(Object value) {
+        if (value instanceof Number) {
+            return String.valueOf(((Number) value).longValue());
+        }
+        return value == null ? "" : String.valueOf(value).trim();
+    }
+
+    private String readString(DocumentSnapshot document, String field) {
+        Object value = document.get(field);
+        return value == null ? "" : String.valueOf(value).trim();
+    }
+
+    private Double readNumber(DocumentSnapshot document, String field) {
+        Object value = document.get(field);
+        return value instanceof Number ? ((Number) value).doubleValue() : null;
+    }
+
     private void showLoading(boolean loading) {
         loadingState.setVisibility(loading ? View.VISIBLE : View.GONE);
         errorState.setVisibility(View.GONE);
@@ -170,6 +290,22 @@ public class AppointmentActivity extends AppCompatActivity {
         loadingState.setVisibility(View.GONE);
         errorState.setVisibility(View.GONE);
         emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
+    }
+
+    private void showError(Exception exception) {
+        String message = exception == null || exception.getMessage() == null
+                ? getString(R.string.state_error_placeholder)
+                : exception.getMessage();
+        showError(message);
+    }
+
+    private void showError(String message) {
+        loadingState.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
+        errorState.setVisibility(View.VISIBLE);
+        if (errorState instanceof TextView) {
+            ((TextView) errorState).setText(message);
+        }
     }
 
     private void openAppointmentDetail(AppointmentAdapter.AppointmentItem appointmentItem) {
@@ -188,6 +324,7 @@ public class AppointmentActivity extends AppCompatActivity {
         intent.putExtra("paymentStatus", appointmentItem.paymentStatus);
         intent.putExtra("paymentMethod", appointmentItem.paymentMethod);
         intent.putExtra("appointmentNote", appointmentItem.note);
+        intent.putExtra("appointmentCreatedAt", appointmentItem.createdAt);
         startActivity(intent);
     }
 
@@ -227,5 +364,25 @@ public class AppointmentActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.nav_target_not_registered, Toast.LENGTH_SHORT).show();
         }
         return false;
+    }
+
+    private static class BarberInfo {
+        final String name;
+        final String experience;
+
+        BarberInfo(String name, String experience) {
+            this.name = name;
+            this.experience = experience;
+        }
+    }
+
+    private static class ServiceInfo {
+        final String name;
+        final Double price;
+
+        ServiceInfo(String name, Double price) {
+            this.name = name;
+            this.price = price;
+        }
     }
 }

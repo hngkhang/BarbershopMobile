@@ -77,6 +77,27 @@ public class BarberRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    public void getBarberSchedule(long barberId, RepositoryCallback<List<BarberSchedule>> callback) {
+        firestore.collection(COLLECTION_SCHEDULES)
+                .whereEqualTo("barberId", barberId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<BarberSchedule> schedules = new ArrayList<>();
+                    for (int index = 0; index < querySnapshot.size(); index++) {
+                        BarberSchedule schedule = BarberSchedule.fromDocument(querySnapshot.getDocuments().get(index));
+                        if (schedule.getStartAt() != null && schedule.getEndAt() != null) {
+                            schedules.add(schedule);
+                        }
+                    }
+
+                    Collections.sort(schedules, (left, right) ->
+                            left.getStartAt().compareTo(right.getStartAt())
+                    );
+                    callback.onSuccess(schedules);
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
     public void getBarberReviews(String barberId, RepositoryCallback<List<Feedback>> callback) {
         List<String> lookupIds = new ArrayList<>();
         lookupIds.add(barberId);

@@ -126,8 +126,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/space_12"
             android:layout_marginTop="@dimen/space_2"
+            android:layout_marginEnd="@dimen/space_8"
             android:textColor="@color/color_text_primary"
             android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/buttonAppointmentDetails"
             app:layout_constraintStart_toEndOf="@id/textAppointmentBarberInitial"
             app:layout_constraintTop_toBottomOf="@id/textAppointmentService"
             tools:text="$25.00" />
@@ -147,13 +149,13 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/buttonAppointmentDetails"
             style="@style/Widget_ArtBarbershop_SecondaryButton"
-            android:layout_width="@dimen/list_action_button_width"
+            android:layout_width="@dimen/appointment_detail_button_width"
             android:layout_height="@dimen/button_height_small"
             android:layout_marginTop="@dimen/space_10"
             android:minHeight="@dimen/touch_target_min"
             android:paddingStart="@dimen/space_8"
             android:paddingEnd="@dimen/space_8"
-            android:text="@string/appointment_view_details"
+            android:text="@string/appointment_detail_action"
             android:textSize="@dimen/text_caption"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textAppointmentPaymentStatus" />

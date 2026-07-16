@@ -112,6 +112,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
     }
 
     public static class ServiceItem {
+        public final String serviceId;
         public final String name;
         public final String description;
         public final String duration;
@@ -122,6 +123,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
         public final int iconRes;
 
         public ServiceItem(
+                String serviceId,
                 String name,
                 String description,
                 String duration,
@@ -131,6 +133,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
                 int imageBackgroundRes,
                 int iconRes
         ) {
+            this.serviceId = serviceId;
             this.name = name;
             this.description = description;
             this.duration = duration;

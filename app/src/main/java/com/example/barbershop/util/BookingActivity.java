@@ -7,46 +7,60 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.GridLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.barbershop.data.AppointmentRepository;
+import com.example.barbershop.data.BarberRepository;
+import com.example.barbershop.data.ServiceRepository;
+import com.example.barbershop.models.Appointment;
+import com.example.barbershop.models.BarberSchedule;
+import com.example.barbershop.models.ShopService;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.Timestamp;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class BookingActivity extends AppCompatActivity {
 
-    private static final String DEFAULT_SERVICE_NAME = "Haircut";
-    private static final String DEFAULT_SERVICE_PRICE = "$25.00";
-    private static final String ADDON_SERVICE_NAME = "Shampoo";
-    private static final String ADDON_SERVICE_PRICE = "$12.00";
-    private static final String DEFAULT_BARBER_NAME = "Michael";
+    public static final String EXTRA_SERVICE_SELECTION_MODE = "serviceSelectionMode";
+    public static final String EXTRA_BARBER_SELECTION_MODE = "barberSelectionMode";
+    public static final String EXTRA_SERVICE_ID = "serviceId";
+    public static final String EXTRA_BARBER_ID = "barberId";
+    public static final String EXTRA_BARBER_NAME = "barberName";
+    public static final String EXTRA_BARBER_EXPERIENCE = "barberExperience";
+
+    private static final int REQUEST_SELECT_SERVICE = 1001;
+    private static final int REQUEST_SELECT_BARBER = 1002;
 
     private final List<DateOption> dateOptions = new ArrayList<>();
-    private final List<TextView> dateChips = new ArrayList<>();
-    private final List<TextView> timeChips = new ArrayList<>();
+    private final List<BarberSchedule> barberSchedules = new ArrayList<>();
+    private final List<Appointment> barberAppointments = new ArrayList<>();
 
-    private String selectedServiceName;
-    private String selectedServicePrice;
-    private String selectedBarberName;
-    private String pendingSelectedDateLabel;
-    private String initialBookingNote;
+    private ServiceRepository serviceRepository;
+    private BarberRepository barberRepository;
+    private AppointmentRepository appointmentRepository;
+    private ShopService selectedService;
+    private long selectedBarberId = -1L;
+    private String selectedBarberName = "";
+    private String selectedBarberExperience = "";
     private DateOption selectedDateOption;
-    private String selectedStartTime = "10:00 AM";
-    private int totalDurationMinutes;
-    private double totalPrice;
+    private TimeSlot selectedTimeSlot;
 
     private TextView textSelectedServiceName;
     private TextView textSelectedServicePrice;
-    private TextView textAddonServicePrice;
     private TextView textSelectedBarberInitial;
     private TextView textSelectedBarberName;
     private TextView textSelectedBarberExperience;
@@ -54,55 +68,36 @@ public class BookingActivity extends AppCompatActivity {
     private TextView textTotalDuration;
     private TextView textTotalPrice;
     private TextView textNoteCounter;
+    private TextView textBookingAvailabilityMessage;
+    private TextView textBookingTimeMessage;
     private TextInputEditText editTextBookingNote;
+    private LinearLayout dateSelectorRow;
+    private GridLayout timeSlotGrid;
+    private View buttonContinue;
+    private boolean availabilityLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking);
 
-        readTemporaryBookingData();
+        serviceRepository = new ServiceRepository();
+        barberRepository = new BarberRepository();
+        appointmentRepository = new AppointmentRepository();
+
         bindViews();
         setupTopBar();
         setupServiceSection();
         setupBarberSection();
-        setupDateSelector();
-        setupTimeSelector();
         setupNoteInput();
         setupSummary();
-    }
-
-    private void readTemporaryBookingData() {
-        Intent intent = getIntent();
-        // TODO: Replace temporary extras/defaults with selected Firebase/SQLite service and barber models.
-        selectedServiceName = intent.getStringExtra("selectedServiceName");
-        selectedServicePrice = intent.getStringExtra("selectedServicePrice");
-        selectedBarberName = intent.getStringExtra("selectedBarberName");
-        pendingSelectedDateLabel = intent.getStringExtra("selectedDateLabel");
-        initialBookingNote = intent.getStringExtra("bookingNote");
-
-        if (selectedServiceName == null || selectedServiceName.trim().isEmpty()) {
-            selectedServiceName = DEFAULT_SERVICE_NAME;
-        }
-        if (selectedServicePrice == null || selectedServicePrice.trim().isEmpty()) {
-            selectedServicePrice = DEFAULT_SERVICE_PRICE;
-        }
-        if (selectedBarberName == null || selectedBarberName.trim().isEmpty()) {
-            selectedBarberName = DEFAULT_BARBER_NAME;
-        }
-        String restoredStartTime = intent.getStringExtra("selectedStartTime");
-        if (restoredStartTime != null && !restoredStartTime.trim().isEmpty()) {
-            selectedStartTime = restoredStartTime;
-        }
-
-        totalDurationMinutes = getTemporaryDurationForService(selectedServiceName) + 15;
-        totalPrice = parsePrice(selectedServicePrice) + parsePrice(ADDON_SERVICE_PRICE);
+        readBookingSelection();
+        refreshBookingUi();
     }
 
     private void bindViews() {
         textSelectedServiceName = findViewById(R.id.textSelectedServiceName);
         textSelectedServicePrice = findViewById(R.id.textSelectedServicePrice);
-        textAddonServicePrice = findViewById(R.id.textAddonServicePrice);
         textSelectedBarberInitial = findViewById(R.id.textSelectedBarberInitial);
         textSelectedBarberName = findViewById(R.id.textSelectedBarberName);
         textSelectedBarberExperience = findViewById(R.id.textSelectedBarberExperience);
@@ -110,7 +105,20 @@ public class BookingActivity extends AppCompatActivity {
         textTotalDuration = findViewById(R.id.textTotalDuration);
         textTotalPrice = findViewById(R.id.textTotalPrice);
         textNoteCounter = findViewById(R.id.textNoteCounter);
+        textBookingAvailabilityMessage = findViewById(R.id.textBookingAvailabilityMessage);
+        textBookingTimeMessage = findViewById(R.id.textBookingTimeMessage);
         editTextBookingNote = findViewById(R.id.editTextBookingNote);
+        dateSelectorRow = findViewById(R.id.dateSelectorRow);
+        timeSlotGrid = findViewById(R.id.timeSlotGrid);
+        buttonContinue = findViewById(R.id.buttonContinue);
+        findViewById(R.id.addonServiceCard).setVisibility(View.GONE);
+    }
+
+    private void readBookingSelection() {
+        long serviceId = getIntent().getLongExtra(EXTRA_SERVICE_ID, -1L);
+        if (serviceId > 0L) {
+            loadSelectedService(serviceId);
+        }
     }
 
     private void setupTopBar() {
@@ -118,90 +126,25 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private void setupServiceSection() {
-        textSelectedServiceName.setText(selectedServiceName);
-        textSelectedServicePrice.setText(selectedServicePrice);
-        textAddonServicePrice.setText(ADDON_SERVICE_PRICE);
-
         findViewById(R.id.buttonAddMoreServices).setOnClickListener(v -> {
-            Toast.makeText(this, R.string.booking_add_more_demo, Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, ServiceListActivity.class));
+            Intent intent = new Intent(this, ServiceListActivity.class);
+            intent.putExtra(EXTRA_SERVICE_SELECTION_MODE, true);
+            startActivityForResult(intent, REQUEST_SELECT_SERVICE);
         });
     }
 
     private void setupBarberSection() {
-        textSelectedBarberInitial.setText(selectedBarberName.substring(0, 1).toUpperCase(Locale.US));
-        textSelectedBarberInitial.setContentDescription(
-                getString(R.string.booking_barber_avatar_content_description, selectedBarberName)
-        );
-        textSelectedBarberName.setText(selectedBarberName);
-        textSelectedBarberExperience.setText("8 years experience");
-        textSelectedBarberSpecialty.setText("Specialty: Fade, Classic Cut");
-
         findViewById(R.id.buttonChangeBarber).setOnClickListener(v -> {
-            Toast.makeText(this, R.string.booking_change_barber_demo, Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, BarberListActivity.class));
-        });
-    }
-
-    private void setupDateSelector() {
-        dateChips.add(findViewById(R.id.chipDateMonday));
-        dateChips.add(findViewById(R.id.chipDateTuesday));
-        dateChips.add(findViewById(R.id.chipDateWednesday));
-        dateChips.add(findViewById(R.id.chipDateThursday));
-        dateChips.add(findViewById(R.id.chipDateFriday));
-        dateChips.add(findViewById(R.id.chipDateSaturday));
-        dateChips.add(findViewById(R.id.chipDateSunday));
-
-        buildTemporaryDateOptions();
-
-        for (int index = 0; index < dateChips.size(); index++) {
-            TextView chip = dateChips.get(index);
-            DateOption option = dateOptions.get(index);
-            chip.setText(option.chipLabel);
-            chip.setOnClickListener(v -> {
-                selectedDateOption = option;
-                updateDateSelection();
-            });
-        }
-
-        selectedDateOption = findRestoredDateOption();
-        updateDateSelection();
-    }
-
-    private void setupTimeSelector() {
-        addTimeChip(R.id.chipTime0930, "9:30 AM");
-        addTimeChip(R.id.chipTime1000, "10:00 AM");
-        addTimeChip(R.id.chipTime1030, "10:30 AM");
-        addTimeChip(R.id.chipTime1100, "11:00 AM");
-        addTimeChip(R.id.chipTime1130, "11:30 AM");
-        addTimeChip(R.id.chipTime1230, "12:30 PM");
-
-        ((TextView) findViewById(R.id.chipTime0900)).setText("9:00 AM");
-        ((TextView) findViewById(R.id.chipTime1200)).setText("12:00 PM");
-        updateTimeSelection();
-    }
-
-    private void addTimeChip(int chipId, String time) {
-        TextView chip = findViewById(chipId);
-        chip.setText(time);
-        timeChips.add(chip);
-        chip.setOnClickListener(v -> {
-            selectedStartTime = time;
-            updateTimeSelection();
+            Intent intent = new Intent(this, BarberListActivity.class);
+            intent.putExtra(EXTRA_BARBER_SELECTION_MODE, true);
+            startActivityForResult(intent, REQUEST_SELECT_BARBER);
         });
     }
 
     private void setupNoteInput() {
-        if (initialBookingNote != null
-                && !initialBookingNote.trim().isEmpty()
-                && !initialBookingNote.equals(getString(R.string.booking_default_note))) {
-            editTextBookingNote.setText(initialBookingNote);
-        }
         editTextBookingNote.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // No-op.
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -209,145 +152,445 @@ public class BookingActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                // No-op.
-            }
+            public void afterTextChanged(Editable s) { }
         });
-        int noteLength = editTextBookingNote.getText() == null ? 0 : editTextBookingNote.getText().length();
-        textNoteCounter.setText(String.format(Locale.US, "%d/200", noteLength));
+        textNoteCounter.setText(String.format(Locale.US, "%d/200", 0));
     }
 
     private void setupSummary() {
-        textTotalDuration.setText(String.format(Locale.US, "%d min", totalDurationMinutes));
-        textTotalPrice.setText(formatPrice(totalPrice));
-        findViewById(R.id.buttonContinue).setOnClickListener(v -> openBookingConfirmation());
+        buttonContinue.setOnClickListener(v -> openBookingConfirmation());
     }
 
-    private void updateDateSelection() {
-        for (int index = 0; index < dateChips.size(); index++) {
-            TextView chip = dateChips.get(index);
-            boolean selected = dateOptions.get(index) == selectedDateOption;
-            chip.setBackgroundResource(selected
-                    ? R.drawable.bg_booking_date_selected
-                    : R.drawable.bg_booking_date_unselected);
-            chip.setTextColor(ContextCompat.getColor(
-                    this,
-                    selected ? R.color.color_text_inverse : R.color.color_text_primary
-            ));
-            chip.setTypeface(null, selected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
+
+        if (requestCode == REQUEST_SELECT_SERVICE) {
+            long serviceId = data.getLongExtra(EXTRA_SERVICE_ID, -1L);
+            if (serviceId > 0L) {
+                loadSelectedService(serviceId);
+            }
+        } else if (requestCode == REQUEST_SELECT_BARBER) {
+            long barberId = data.getLongExtra(EXTRA_BARBER_ID, -1L);
+            if (barberId > 0L) {
+                selectedBarberId = barberId;
+                selectedBarberName = valueOrEmpty(data.getStringExtra(EXTRA_BARBER_NAME));
+                selectedBarberExperience = valueOrEmpty(data.getStringExtra(EXTRA_BARBER_EXPERIENCE));
+                selectedDateOption = null;
+                selectedTimeSlot = null;
+                loadBarberAvailability();
+                refreshBookingUi();
+            }
         }
     }
 
-    private void updateTimeSelection() {
-        for (TextView chip : timeChips) {
-            boolean selected = selectedStartTime.contentEquals(chip.getText());
-            chip.setBackgroundResource(selected
-                    ? R.drawable.bg_booking_date_selected
-                    : R.drawable.bg_booking_date_unselected);
-            chip.setTextColor(ContextCompat.getColor(
-                    this,
-                    selected ? R.color.color_text_inverse : R.color.color_text_primary
-            ));
-            chip.setTypeface(null, selected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+    private void loadSelectedService(long serviceId) {
+        serviceRepository.getServiceById(serviceId, new BarberRepository.RepositoryCallback<ShopService>() {
+            @Override
+            public void onSuccess(ShopService service) {
+                if (service == null) {
+                    Toast.makeText(BookingActivity.this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                selectedService = service;
+                selectedDateOption = null;
+                selectedTimeSlot = null;
+                if (selectedBarberId > 0L) {
+                    rebuildAvailableDates();
+                }
+                refreshBookingUi();
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                Toast.makeText(BookingActivity.this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadBarberAvailability() {
+        barberSchedules.clear();
+        barberAppointments.clear();
+        availabilityLoading = true;
+        refreshBookingUi();
+        barberRepository.getBarberSchedule(selectedBarberId, new BarberRepository.RepositoryCallback<List<BarberSchedule>>() {
+            @Override
+            public void onSuccess(List<BarberSchedule> schedules) {
+                barberSchedules.addAll(schedules);
+                appointmentRepository.getAppointmentsForBarber(
+                        selectedBarberId,
+                        new AppointmentRepository.RepositoryCallback<List<Appointment>>() {
+                            @Override
+                            public void onSuccess(List<Appointment> appointments) {
+                                barberAppointments.addAll(appointments);
+                                availabilityLoading = false;
+                                rebuildAvailableDates();
+                                refreshBookingUi();
+                            }
+
+                            @Override
+                            public void onError(Exception exception) {
+                                showAvailabilityError();
+                            }
+                        }
+                );
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                showAvailabilityError();
+            }
+        });
+    }
+
+    private void showAvailabilityError() {
+        availabilityLoading = false;
+        dateOptions.clear();
+        selectedDateOption = null;
+        selectedTimeSlot = null;
+        refreshBookingUi();
+        Toast.makeText(this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+    }
+
+    private void rebuildAvailableDates() {
+        dateOptions.clear();
+        selectedDateOption = null;
+        selectedTimeSlot = null;
+        if (selectedService == null || selectedService.getTimeMinutes() <= 0) {
+            return;
         }
+
+        List<BarberSchedule> sortedSchedules = new ArrayList<>(barberSchedules);
+        Collections.sort(sortedSchedules, (left, right) -> left.getStartAt().compareTo(right.getStartAt()));
+        for (BarberSchedule schedule : sortedSchedules) {
+            DateOption option = new DateOption(startOfDay(schedule.getStartAt().toDate()));
+            if (!containsDate(option) && !calculateSlotsForDate(option).isEmpty()) {
+                dateOptions.add(option);
+            }
+        }
+    }
+
+    private boolean containsDate(DateOption target) {
+        for (DateOption option : dateOptions) {
+            if (option.dayStart.getTime() == target.dayStart.getTime()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<TimeSlot> calculateSlotsForDate(DateOption option) {
+        List<TimeSlot> slots = new ArrayList<>();
+        if (selectedService == null || selectedService.getTimeMinutes() <= 0) {
+            return slots;
+        }
+
+        long now = System.currentTimeMillis();
+        for (BarberSchedule schedule : barberSchedules) {
+            long scheduleStart = schedule.getStartAt().toDate().getTime();
+            long scheduleEnd = schedule.getEndAt().toDate().getTime();
+            if (!sameDay(scheduleStart, option.dayStart.getTime())) {
+                continue;
+            }
+
+            List<Appointment> busyAppointments = appointmentsOverlapping(scheduleStart, scheduleEnd);
+            long freeStart = Math.max(scheduleStart, now);
+            for (Appointment appointment : busyAppointments) {
+                long busyStart = appointment.getStartAt().toDate().getTime();
+                long busyEnd = appointment.getEndAt().toDate().getTime();
+                if (busyEnd <= freeStart) {
+                    continue;
+                }
+                if (busyStart > freeStart) {
+                    appendSlots(slots, freeStart, Math.min(busyStart, scheduleEnd));
+                }
+                freeStart = Math.max(freeStart, busyEnd);
+                if (freeStart >= scheduleEnd) {
+                    break;
+                }
+            }
+            if (freeStart < scheduleEnd) {
+                appendSlots(slots, freeStart, scheduleEnd);
+            }
+        }
+        return slots;
+    }
+
+    private List<Appointment> appointmentsOverlapping(long start, long end) {
+        List<Appointment> result = new ArrayList<>();
+        for (Appointment appointment : barberAppointments) {
+            long appointmentStart = appointment.getStartAt().toDate().getTime();
+            long appointmentEnd = appointment.getEndAt().toDate().getTime();
+            if (appointmentStart < end && appointmentEnd > start) {
+                result.add(appointment);
+            }
+        }
+        Collections.sort(result, (left, right) -> left.getStartAt().compareTo(right.getStartAt()));
+        return result;
+    }
+
+    private void appendSlots(List<TimeSlot> slots, long freeStart, long freeEnd) {
+        long durationMillis = selectedService.getTimeMinutes() * 60_000L;
+        long cursor = freeStart;
+        while (cursor + durationMillis <= freeEnd) {
+            slots.add(new TimeSlot(cursor, cursor + durationMillis));
+            cursor += durationMillis;
+        }
+    }
+
+    private void refreshBookingUi() {
+        bindServiceUi();
+        bindBarberUi();
+        bindDateUi();
+        bindTimeUi();
+        bindAvailabilityMessages();
+        bindSummaryUi();
+    }
+
+    private void bindServiceUi() {
+        if (selectedService == null) {
+            textSelectedServiceName.setText(R.string.booking_add_more);
+            textSelectedServicePrice.setText("");
+            return;
+        }
+        textSelectedServiceName.setText(selectedService.getName());
+        if (selectedService.getTimeMinutes() > 0) {
+            textSelectedServicePrice.setText(getString(
+                    R.string.booking_service_meta_format,
+                    formatPrice(selectedService.getPrice()),
+                    String.format(Locale.US, "%d min", selectedService.getTimeMinutes())
+            ));
+        } else {
+            textSelectedServicePrice.setText(getString(
+                    R.string.booking_service_meta_format,
+                    formatPrice(selectedService.getPrice()),
+                    getString(R.string.booking_duration_unavailable)
+            ));
+        }
+    }
+
+    private void bindBarberUi() {
+        textSelectedBarberInitial.setText(initial(selectedBarberName));
+        textSelectedBarberInitial.setContentDescription(
+                getString(R.string.booking_barber_avatar_content_description, selectedBarberName)
+        );
+        textSelectedBarberName.setText(selectedBarberName);
+        textSelectedBarberExperience.setText(formatExperience(selectedBarberExperience));
+        textSelectedBarberSpecialty.setText(R.string.barber_specialty_not_available);
+    }
+
+    private void bindDateUi() {
+        dateSelectorRow.removeAllViews();
+        for (DateOption option : dateOptions) {
+            TextView chip = new TextView(this);
+            chip.setTextAppearance(this, R.style.TextAppearance_ArtBarbershop_Caption);
+            chip.setText(option.chipLabel());
+            chip.setGravity(android.view.Gravity.CENTER);
+            chip.setTextColor(ContextCompat.getColor(this, option == selectedDateOption
+                    ? R.color.color_text_inverse : R.color.color_text_primary));
+            chip.setTypeface(null, option == selectedDateOption
+                    ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+            chip.setBackgroundResource(option == selectedDateOption
+                    ? R.drawable.bg_booking_date_selected : R.drawable.bg_booking_date_unselected);
+            chip.setOnClickListener(v -> {
+                selectedDateOption = option;
+                selectedTimeSlot = null;
+                refreshBookingUi();
+            });
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    getResources().getDimensionPixelSize(R.dimen.booking_date_chip_width),
+                    getResources().getDimensionPixelSize(R.dimen.space_64)
+            );
+            params.setMarginEnd(getResources().getDimensionPixelSize(R.dimen.space_8));
+            dateSelectorRow.addView(chip, params);
+        }
+    }
+
+    private void bindTimeUi() {
+        timeSlotGrid.removeAllViews();
+        if (selectedDateOption == null) {
+            return;
+        }
+        List<TimeSlot> slots = calculateSlotsForDate(selectedDateOption);
+        timeSlotGrid.setColumnCount(3);
+        timeSlotGrid.setRowCount((slots.size() + 2) / 3);
+        for (TimeSlot slot : slots) {
+            TextView chip = new TextView(this);
+            boolean selected = slot.equals(selectedTimeSlot);
+            chip.setTextAppearance(this, R.style.TextAppearance_ArtBarbershop_Caption);
+            chip.setText(formatTime(slot.startAt));
+            chip.setGravity(android.view.Gravity.CENTER);
+            chip.setTextColor(ContextCompat.getColor(this, selected
+                    ? R.color.color_text_inverse : R.color.color_text_primary));
+            chip.setTypeface(null, selected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+            chip.setBackgroundResource(selected
+                    ? R.drawable.bg_booking_date_selected : R.drawable.bg_booking_date_unselected);
+            chip.setOnClickListener(v -> {
+                selectedTimeSlot = slot;
+                refreshBookingUi();
+            });
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = getResources().getDimensionPixelSize(R.dimen.booking_time_slot_width);
+            params.height = getResources().getDimensionPixelSize(R.dimen.touch_target_min);
+            params.setMargins(0, 0, getResources().getDimensionPixelSize(R.dimen.space_8),
+                    getResources().getDimensionPixelSize(R.dimen.space_8));
+            timeSlotGrid.addView(chip, params);
+        }
+    }
+
+    private void bindAvailabilityMessages() {
+        String availabilityMessage = "";
+        if (selectedService == null) {
+            availabilityMessage = getString(R.string.booking_select_service_prompt);
+        } else if (selectedService.getTimeMinutes() <= 0) {
+            availabilityMessage = getString(R.string.booking_service_duration_missing);
+        } else if (selectedBarberId <= 0L) {
+            availabilityMessage = getString(R.string.booking_select_barber_prompt);
+        } else if (availabilityLoading) {
+            availabilityMessage = getString(R.string.booking_loading_availability);
+        } else if (dateOptions.isEmpty()) {
+            availabilityMessage = getString(R.string.booking_no_availability);
+        }
+        showMessage(textBookingAvailabilityMessage, availabilityMessage);
+
+        String timeMessage = "";
+        if (selectedService != null && selectedService.getTimeMinutes() > 0
+                && selectedBarberId > 0L && !availabilityLoading) {
+            if (selectedDateOption == null) {
+                timeMessage = getString(R.string.booking_select_date_prompt);
+            } else if (calculateSlotsForDate(selectedDateOption).isEmpty()) {
+                timeMessage = getString(R.string.booking_no_slots);
+            }
+        }
+        showMessage(textBookingTimeMessage, timeMessage);
+    }
+
+    private void showMessage(TextView textView, String message) {
+        boolean visible = message != null && !message.isEmpty();
+        textView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (visible) {
+            textView.setText(message);
+        }
+    }
+
+    private void bindSummaryUi() {
+        boolean canContinue = selectedService != null
+                && selectedBarberId > 0L
+                && selectedDateOption != null
+                && selectedTimeSlot != null;
+        textTotalDuration.setText(selectedService == null || selectedService.getTimeMinutes() <= 0
+                ? "—" : String.format(Locale.US, "%d min", selectedService.getTimeMinutes()));
+        textTotalPrice.setText(selectedService == null ? "" : formatPrice(selectedService.getPrice()));
+        buttonContinue.setEnabled(canContinue);
+        buttonContinue.setAlpha(canContinue ? 1.0f : 0.5f);
     }
 
     private void openBookingConfirmation() {
+        if (selectedService == null || selectedBarberId <= 0L || selectedTimeSlot == null) {
+            Toast.makeText(this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        final long serviceId;
+        try {
+            serviceId = Long.parseLong(selectedService.getServiceId());
+        } catch (NumberFormatException exception) {
+            Toast.makeText(this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+            return;
+        }
         Intent intent = new Intent(this, BookingConfirmActivity.class);
-        intent.putExtra("selectedServiceName", selectedServiceName);
-        intent.putExtra("selectedServicePrice", selectedServicePrice);
-        intent.putExtra("addonServiceName", ADDON_SERVICE_NAME);
-        intent.putExtra("addonServicePrice", ADDON_SERVICE_PRICE);
-        intent.putExtra("selectedBarberName", selectedBarberName);
-        intent.putExtra("selectedDateLabel", selectedDateOption.confirmationLabel);
-        intent.putExtra("selectedStartTime", selectedStartTime);
-        intent.putExtra("selectedEndTime", calculateEndTime(selectedStartTime, totalDurationMinutes));
-        intent.putExtra("totalDurationMinutes", totalDurationMinutes);
-        intent.putExtra("totalPrice", totalPrice);
-        intent.putExtra("bookingNote", getBookingNote());
+        intent.putExtra(EXTRA_SERVICE_ID, serviceId);
+        intent.putExtra(EXTRA_BARBER_ID, selectedBarberId);
+        intent.putExtra(EXTRA_BARBER_NAME, selectedBarberName);
+        intent.putExtra(EXTRA_BARBER_EXPERIENCE, selectedBarberExperience);
+        intent.putExtra("serviceName", selectedService.getName());
+        intent.putExtra("servicePrice", selectedService.getPrice());
+        intent.putExtra("serviceDuration", selectedService.getTimeMinutes());
+        intent.putExtra("startAtMillis", selectedTimeSlot.startAt);
+        intent.putExtra("endAtMillis", selectedTimeSlot.endAt);
+        intent.putExtra("bookingNote", bookingNote());
         startActivity(intent);
     }
 
-    private String getBookingNote() {
-        String note = editTextBookingNote.getText() == null
-                ? ""
-                : editTextBookingNote.getText().toString().trim();
-        return note.isEmpty() ? getString(R.string.booking_default_note) : note;
+    private String bookingNote() {
+        return editTextBookingNote.getText() == null ? "" : editTextBookingNote.getText().toString().trim();
     }
 
-    private void buildTemporaryDateOptions() {
-        dateOptions.clear();
+    private boolean sameDay(long first, long second) {
+        Calendar firstCalendar = Calendar.getInstance();
+        firstCalendar.setTimeInMillis(first);
+        Calendar secondCalendar = Calendar.getInstance();
+        secondCalendar.setTimeInMillis(second);
+        return firstCalendar.get(Calendar.YEAR) == secondCalendar.get(Calendar.YEAR)
+                && firstCalendar.get(Calendar.DAY_OF_YEAR) == secondCalendar.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private Date startOfDay(Date date) {
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat chipFormat = new SimpleDateFormat("EEE\nMMM d", Locale.US);
-        SimpleDateFormat confirmationFormat = new SimpleDateFormat("EEE, MMM d, yyyy", Locale.US);
-
-        for (int index = 0; index < dateChips.size(); index++) {
-            Calendar optionCalendar = (Calendar) calendar.clone();
-            optionCalendar.add(Calendar.DATE, index);
-            dateOptions.add(new DateOption(
-                    chipFormat.format(optionCalendar.getTime()),
-                    confirmationFormat.format(optionCalendar.getTime())
-            ));
-        }
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
     }
 
-    private DateOption findRestoredDateOption() {
-        if (pendingSelectedDateLabel != null) {
-            for (DateOption option : dateOptions) {
-                if (pendingSelectedDateLabel.equals(option.confirmationLabel)) {
-                    return option;
-                }
-            }
-        }
-        return dateOptions.get(2);
+    private String formatTime(long timeMillis) {
+        return new SimpleDateFormat("h:mm a", Locale.US).format(new Date(timeMillis));
     }
 
-    private int getTemporaryDurationForService(String serviceName) {
-        // TODO: Replace this temporary mapping with service duration from Firebase/SQLite.
-        String normalized = serviceName.toLowerCase(Locale.US);
-        if (normalized.contains("perm") || normalized.contains("combo")) {
-            return 60;
-        }
-        if (normalized.contains("color")) {
-            return 45;
-        }
-        if (normalized.contains("shampoo")) {
-            return 15;
-        }
-        return 30;
+    private String formatPrice(double value) {
+        return String.format(Locale.US, "$%.2f", value);
     }
 
-    private double parsePrice(String priceText) {
-        try {
-            return Double.parseDouble(priceText.replace("$", "").trim());
-        } catch (NumberFormatException exception) {
-            return 0.0;
-        }
+    private String initial(String value) {
+        return value.isEmpty() ? "" : value.substring(0, 1).toUpperCase(Locale.US);
     }
 
-    private String formatPrice(double price) {
-        return String.format(Locale.US, "$%.2f", price);
+    private String formatExperience(String value) {
+        if (value.isEmpty()) {
+            return getString(R.string.barber_experience_not_updated);
+        }
+        return value.toLowerCase(Locale.US).contains("year")
+                ? value : getString(R.string.barber_experience_years_format, value);
     }
 
-    private String calculateEndTime(String startTime, int durationMinutes) {
-        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.US);
-        try {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(timeFormat.parse(startTime));
-            calendar.add(Calendar.MINUTE, durationMinutes);
-            return timeFormat.format(calendar.getTime());
-        } catch (ParseException exception) {
-            return startTime;
-        }
+    private String valueOrEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private static class DateOption {
-        final String chipLabel;
-        final String confirmationLabel;
+        final Date dayStart;
 
-        DateOption(String chipLabel, String confirmationLabel) {
-            this.chipLabel = chipLabel;
-            this.confirmationLabel = confirmationLabel;
+        DateOption(Date dayStart) {
+            this.dayStart = dayStart;
+        }
+
+        String chipLabel() {
+            return new SimpleDateFormat("EEE\nMMM d", Locale.US).format(dayStart);
+        }
+    }
+
+    private static class TimeSlot {
+        final long startAt;
+        final long endAt;
+
+        TimeSlot(long startAt, long endAt) {
+            this.startAt = startAt;
+            this.endAt = endAt;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return other instanceof TimeSlot && ((TimeSlot) other).startAt == startAt;
+        }
+
+        @Override
+        public int hashCode() {
+            return Long.valueOf(startAt).hashCode();
         }
     }
 }

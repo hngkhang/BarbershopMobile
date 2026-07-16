@@ -92,11 +92,16 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             textStatus.setText(appointmentItem.status);
             textStatus.setBackgroundResource(statusBackground(appointmentItem.status));
             textStatus.setTextColor(ContextCompat.getColor(itemView.getContext(), statusColor(appointmentItem.status)));
-            textPaymentStatus.setText(appointmentItem.paymentStatus);
-            textPaymentStatus.setTextColor(ContextCompat.getColor(
-                    itemView.getContext(),
-                    paymentColor(appointmentItem.paymentStatus)
-            ));
+            boolean hasPaymentData = appointmentItem.paymentStatus != null
+                    && !appointmentItem.paymentStatus.trim().isEmpty();
+            textPaymentStatus.setVisibility(hasPaymentData ? View.VISIBLE : View.GONE);
+            if (hasPaymentData) {
+                textPaymentStatus.setText(appointmentItem.paymentStatus);
+                textPaymentStatus.setTextColor(ContextCompat.getColor(
+                        itemView.getContext(),
+                        paymentColor(appointmentItem.paymentStatus)
+                ));
+            }
             buttonDetails.setOnClickListener(v -> listener.onViewDetailsClick(appointmentItem));
         }
 
@@ -155,6 +160,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         public final String paymentStatus;
         public final String paymentMethod;
         public final String note;
+        public final String createdAt;
 
         public AppointmentItem(
                 String id,
@@ -172,7 +178,8 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 String status,
                 String paymentStatus,
                 String paymentMethod,
-                String note
+                String note,
+                String createdAt
         ) {
             this.id = id;
             this.day = day;
@@ -193,6 +200,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             this.paymentStatus = paymentStatus;
             this.paymentMethod = paymentMethod;
             this.note = note;
+            this.createdAt = createdAt;
         }
     }
 }

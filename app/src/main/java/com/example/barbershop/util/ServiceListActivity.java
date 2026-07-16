@@ -197,6 +197,7 @@ public class ServiceListActivity extends AppCompatActivity {
     private ServiceAdapter.ServiceItem toServiceItem(ShopService service) {
         String category = formatCategory(service.getCategory());
         return new ServiceAdapter.ServiceItem(
+                service.getServiceId(),
                 fallback(service.getName(), category),
                 buildDescription(category),
                 formatDuration(service.getTimeMinutes()),
@@ -274,13 +275,19 @@ public class ServiceListActivity extends AppCompatActivity {
 
     private void openBookingIfAvailable(ServiceAdapter.ServiceItem serviceItem) {
         try {
-            Class<?> targetClass = Class.forName(getPackageName() + ".BookingActivity");
-            Intent intent = new Intent(this, targetClass);
-            intent.putExtra("selectedServiceName", serviceItem.name);
-            intent.putExtra("selectedServicePrice", serviceItem.price);
+            long serviceId = Long.parseLong(serviceItem.serviceId);
+            if (getIntent().getBooleanExtra(BookingActivity.EXTRA_SERVICE_SELECTION_MODE, false)) {
+                Intent result = new Intent();
+                result.putExtra(BookingActivity.EXTRA_SERVICE_ID, serviceId);
+                setResult(RESULT_OK, result);
+                finish();
+                return;
+            }
+            Intent intent = new Intent(this, BookingActivity.class);
+            intent.putExtra(BookingActivity.EXTRA_SERVICE_ID, serviceId);
             startActivity(intent);
-        } catch (ClassNotFoundException exception) {
-            Toast.makeText(this, getString(R.string.nav_target_unavailable, "Booking"), Toast.LENGTH_SHORT).show();
+        } catch (NumberFormatException exception) {
+            Toast.makeText(this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
         } catch (ActivityNotFoundException exception) {
             Toast.makeText(this, getString(R.string.nav_target_not_registered), Toast.LENGTH_SHORT).show();
         }

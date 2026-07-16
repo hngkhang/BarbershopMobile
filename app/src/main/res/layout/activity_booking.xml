@@ -295,6 +295,7 @@
                     </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/addonServiceCard"
                         style="@style/Widget_ArtBarbershop_Card"
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/space_56"
@@ -349,6 +350,16 @@
                         android:textSize="@dimen/text_caption" />
                 </LinearLayout>
             </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/textBookingAvailabilityMessage"
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_8"
+                android:textColor="@color/color_text_secondary"
+                android:visibility="gone"
+                tools:text="Choose a barber to view working dates." />
 
             <TextView
                 style="@style/TextAppearance_ArtBarbershop_Caption"
@@ -683,6 +694,16 @@
                     android:textColor="@color/color_text_primary"
                     tools:text="12:30 PM" />
             </GridLayout>
+
+            <TextView
+                android:id="@+id/textBookingTimeMessage"
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:textColor="@color/color_text_secondary"
+                android:visibility="gone"
+                tools:text="Choose a date to view available times." />
 
             <LinearLayout
                 android:layout_width="match_parent"
