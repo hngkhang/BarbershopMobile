@@ -28,6 +28,10 @@ public class AppointmentDetailActivity extends AppCompatActivity {
     private String duration;
     private String paymentStatus;
     private String paymentMethod;
+    private String barberExperience;
+    private String barberSpecialty;
+    private String appointmentNote;
+    private String appointmentCreatedAt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,10 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         duration = readStringExtra(intent, "appointmentDuration");
         paymentStatus = readStringExtra(intent, "paymentStatus");
         paymentMethod = readStringExtra(intent, "paymentMethod");
+        barberExperience = readStringExtra(intent, "barberExperience");
+        barberSpecialty = readStringExtra(intent, "barberSpecialty");
+        appointmentNote = readStringExtra(intent, "appointmentNote");
+        appointmentCreatedAt = readStringExtra(intent, "appointmentCreatedAt");
     }
 
     private void bindAppointmentDetails() {
@@ -60,10 +68,15 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         statusView.setBackgroundResource(statusBackground(appointmentStatus));
         statusView.setTextColor(ContextCompat.getColor(this, statusColor(appointmentStatus)));
 
-        String barberExperience = readStringExtra(getIntent(), "barberExperience");
-        String barberSpecialty = readStringExtra(getIntent(), "barberSpecialty");
-        String note = readStringExtra(getIntent(), "appointmentNote");
-        String createdAt = readStringExtra(getIntent(), "appointmentCreatedAt");
+        TextView paymentBadge = findViewById(R.id.textDetailPaymentBadge);
+        boolean hasPaymentStatus = !paymentStatus.isEmpty();
+        boolean isPaid = isPaidPayment();
+        paymentBadge.setVisibility(hasPaymentStatus ? View.VISIBLE : View.GONE);
+        if (hasPaymentStatus) {
+            paymentBadge.setText(paymentStatus);
+            paymentBadge.setBackgroundResource(paymentBadgeBackground(paymentStatus));
+            paymentBadge.setTextColor(ContextCompat.getColor(this, paymentBadgeColor(paymentStatus)));
+        }
 
         ((TextView) findViewById(R.id.textAppointmentId)).setText(appointmentId);
         ((TextView) findViewById(R.id.textDetailBarberInitial)).setText(getInitial(barberName));
@@ -80,26 +93,17 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.textDetailEndTime)).setText(detailText(getString(R.string.appointment_end_time_label), endTime));
         ((TextView) findViewById(R.id.textDetailDuration)).setText(detailText(getString(R.string.appointment_duration_label), duration));
         ((TextView) findViewById(R.id.textDetailNote)).setText(
-                note.isEmpty() ? getString(R.string.booking_no_note) : note
+                appointmentNote.isEmpty() ? getString(R.string.booking_no_note) : appointmentNote
         );
 
-        boolean hasPaymentData = !paymentStatus.isEmpty() || !paymentMethod.isEmpty();
-        findViewById(R.id.textDetailPaymentStatus).setVisibility(hasPaymentData ? View.VISIBLE : View.GONE);
-        findViewById(R.id.textDetailPaymentMethod).setVisibility(hasPaymentData ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonViewPayment).setVisibility(hasPaymentData ? View.VISIBLE : View.GONE);
-        if (hasPaymentData) {
-            ((TextView) findViewById(R.id.textDetailPaymentStatus)).setText(
-                    detailText(getString(R.string.appointment_payment_status_label), paymentStatus)
-            );
-            ((TextView) findViewById(R.id.textDetailPaymentMethod)).setText(
-                    detailText(getString(R.string.appointment_payment_method_label), paymentMethod)
-            );
-        }
+        findViewById(R.id.textDetailPaymentStatus).setVisibility(View.GONE);
+        findViewById(R.id.textDetailPaymentMethod).setVisibility(View.GONE);
+        findViewById(R.id.buttonViewPayment).setVisibility(isPaid ? View.GONE : View.VISIBLE);
 
         TextView bookedTimeline = findViewById(R.id.textTimelineBooked);
-        bookedTimeline.setVisibility(createdAt.isEmpty() ? View.GONE : View.VISIBLE);
-        if (!createdAt.isEmpty()) {
-            bookedTimeline.setText(String.format(Locale.US, "Booked          %s", createdAt));
+        bookedTimeline.setVisibility(appointmentCreatedAt.isEmpty() ? View.GONE : View.VISIBLE);
+        if (!appointmentCreatedAt.isEmpty()) {
+            bookedTimeline.setText(String.format(Locale.US, "Booked          %s", appointmentCreatedAt));
         }
         findViewById(R.id.textTimelineConfirmed).setVisibility(View.GONE);
         findViewById(R.id.textTimelineReminder).setVisibility(View.GONE);
@@ -127,11 +131,18 @@ public class AppointmentDetailActivity extends AppCompatActivity {
 
     private void openPayment() {
         Intent intent = new Intent(this, PaymentActivity.class);
+        intent.putExtra("appointmentId", appointmentId);
         intent.putExtra("selectedServiceName", serviceName);
         intent.putExtra("selectedBarberName", barberName);
         intent.putExtra("selectedDateLabel", appointmentDate);
         intent.putExtra("selectedStartTime", startTime);
+        intent.putExtra("selectedEndTime", endTime);
+        intent.putExtra("barberExperience", barberExperience);
+        intent.putExtra("barberSpecialty", barberSpecialty);
+        intent.putExtra("appointmentNote", appointmentNote);
+        intent.putExtra("appointmentCreatedAt", appointmentCreatedAt);
         intent.putExtra("totalDurationMinutes", parseDurationMinutes(duration));
+        intent.putExtra("totalPrice", parsePrice(price));
         intent.putExtra("amount", price);
         startActivity(intent);
     }
@@ -145,6 +156,11 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         return label + "\n" + value;
     }
 
+    private boolean isPaidPayment() {
+        return paymentStatus.equalsIgnoreCase(getString(R.string.appointment_payment_paid))
+                || "PAID".equalsIgnoreCase(paymentStatus);
+    }
+
     private String getInitial(String value) {
         return value == null || value.trim().isEmpty()
                 ? ""
@@ -156,6 +172,14 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             return Integer.parseInt(value.replaceAll("[^0-9]", ""));
         } catch (NumberFormatException exception) {
             return 0;
+        }
+    }
+
+    private double parsePrice(String value) {
+        try {
+            return Double.parseDouble(value.replaceAll("[^0-9.]", ""));
+        } catch (NumberFormatException exception) {
+            return 0.0;
         }
     }
 
@@ -179,5 +203,21 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             return R.color.color_error;
         }
         return R.color.color_success;
+    }
+
+    private int paymentBadgeBackground(String status) {
+        if (status.equalsIgnoreCase(getString(R.string.appointment_payment_paid))
+                || "PAID".equalsIgnoreCase(status)) {
+            return R.drawable.bg_badge_payment_paid;
+        }
+        return R.drawable.bg_badge_payment_unpaid;
+    }
+
+    private int paymentBadgeColor(String status) {
+        if (status.equalsIgnoreCase(getString(R.string.appointment_payment_paid))
+                || "PAID".equalsIgnoreCase(status)) {
+            return R.color.color_payment_paid;
+        }
+        return R.color.color_payment_unpaid;
     }
 }

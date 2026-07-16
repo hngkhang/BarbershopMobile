@@ -214,8 +214,8 @@ public class AppointmentActivity extends AppCompatActivity {
                     service == null ? "" : service.name,
                     service == null ? "" : formatPrice(service.price),
                     displayStatus(readString(document, "status")),
-                    "",
-                    "",
+                    displayPaymentStatus(readString(document, "paymentStatus")),
+                    numberValue(document.get("paymentId")) > 0L ? "banking" : "",
                     readString(document, "note"),
                     formatTimestamp(document.getTimestamp("createdAt"), "MMM d, yyyy - h:mm a")
             ));
@@ -245,6 +245,16 @@ public class AppointmentActivity extends AppCompatActivity {
             return AppointmentAdapter.AppointmentItem.STATUS_CANCELLED;
         }
         return AppointmentAdapter.AppointmentItem.STATUS_UPCOMING;
+    }
+
+    private String displayPaymentStatus(String firebaseStatus) {
+        String normalizedStatus = firebaseStatus.trim().toUpperCase(Locale.US);
+        if ("PAID".equals(normalizedStatus)) {
+            return getString(R.string.appointment_payment_paid);
+        } else if ("REFUNDED".equals(normalizedStatus)) {
+            return getString(R.string.appointment_payment_refunded);
+        }
+        return getString(R.string.appointment_payment_not_paid);
     }
 
     private String durationLabel(Timestamp startAt, Timestamp endAt) {
@@ -278,6 +288,10 @@ public class AppointmentActivity extends AppCompatActivity {
     private Double readNumber(DocumentSnapshot document, String field) {
         Object value = document.get(field);
         return value instanceof Number ? ((Number) value).doubleValue() : null;
+    }
+
+    private long numberValue(Object value) {
+        return value instanceof Number ? ((Number) value).longValue() : 0L;
     }
 
     private void showLoading(boolean loading) {
@@ -353,7 +367,7 @@ public class AppointmentActivity extends AppCompatActivity {
 
     private boolean launchActivityIfAvailable(String simpleClassName) {
         try {
-            Class<?> targetClass = Class.forName(getPackageName() + "." + simpleClassName);
+            Class<?> targetClass = Class.forName(getClass().getPackage().getName() + "." + simpleClassName);
             Intent intent = new Intent(this, targetClass);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);

@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean launchActivityIfAvailable(String simpleClassName) {
-        String targetClassName = getPackageName() + "." + simpleClassName;
+        String targetClassName = getClass().getPackage().getName() + "." + simpleClassName;
 
         try {
             Class<?> targetClass = Class.forName(targetClassName);

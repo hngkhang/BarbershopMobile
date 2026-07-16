@@ -183,6 +183,11 @@
     <string name="payment_status_pending_todo">Status checking will connect to PaymentService.</string>
     <string name="payment_demo_confirmed">Demo payment recorded successfully.</string>
     <string name="payment_demo_confirmed_action">Payment Recorded</string>
+    <string name="payment_recording">Recording payment...</string>
+    <string name="payment_service_not_ready">Payment service is not ready yet.</string>
+    <string name="payment_missing_appointment">Appointment is missing. Please reopen this payment.</string>
+    <string name="payment_status_format">Payment status: %1$s</string>
+    <string name="payment_banking_recorded">Banking payment recorded.</string>
     <string name="payment_qr_content_description">Payment QR code placeholder</string>
     <string name="screen_appointments_title">Appointments</string>
     <string name="screen_appointment_detail_title">Appointment Detail</string>

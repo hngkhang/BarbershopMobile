@@ -357,7 +357,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private boolean launchActivityIfAvailable(String simpleClassName) {
         try {
-            Class<?> targetClass = Class.forName(getPackageName() + "." + simpleClassName);
+            Class<?> targetClass = Class.forName(getClass().getPackage().getName() + "." + simpleClassName);
             Intent intent = new Intent(this, targetClass);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
