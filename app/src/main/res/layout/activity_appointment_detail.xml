@@ -122,6 +122,20 @@
                         tools:text="Upcoming" />
 
                     <TextView
+                        android:id="@+id/textDetailPaymentBadge"
+                        style="@style/TextAppearance_ArtBarbershop_Badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_8"
+                        android:background="@drawable/bg_badge_payment_unpaid"
+                        android:gravity="center"
+                        android:minHeight="@dimen/badge_min_height"
+                        android:textColor="@color/color_payment_unpaid"
+                        app:layout_constraintStart_toEndOf="@id/textDetailStatus"
+                        app:layout_constraintTop_toTopOf="@id/textDetailStatus"
+                        tools:text="Not Paid" />
+
+                    <TextView
                         style="@style/TextAppearance_ArtBarbershop_Caption"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

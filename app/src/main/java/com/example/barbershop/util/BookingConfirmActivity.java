@@ -80,7 +80,7 @@ public class BookingConfirmActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.textConfirmSubtotal)).setText(formatPrice(servicePrice));
         ((TextView) findViewById(R.id.textConfirmTax)).setText(formatPrice(0.0));
         ((TextView) findViewById(R.id.textConfirmTotalAmount)).setText(formatPrice(servicePrice));
-        ((TextView) confirmButton).setText(R.string.booking_confirm_booking);
+        ((TextView) confirmButton).setText(R.string.booking_confirm_pay);
     }
 
     private void setupActions() {
@@ -116,8 +116,17 @@ public class BookingConfirmActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(String documentId) {
                         Toast.makeText(BookingConfirmActivity.this, R.string.booking_created_success, Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(BookingConfirmActivity.this, AppointmentActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        Intent intent = new Intent(BookingConfirmActivity.this, PaymentActivity.class);
+                        intent.putExtra("appointmentId", documentId);
+                        intent.putExtra("selectedServiceName", serviceName);
+                        intent.putExtra("selectedBarberName", barberName);
+                        intent.putExtra("selectedDateLabel", formatDate(startAtMillis));
+                        intent.putExtra("selectedStartTime", formatTime(startAtMillis));
+                        intent.putExtra("selectedEndTime", formatTime(endAtMillis));
+                        intent.putExtra("appointmentNote", bookingNote);
+                        intent.putExtra("totalDurationMinutes", serviceDuration);
+                        intent.putExtra("totalPrice", servicePrice);
+                        intent.putExtra("amount", formatPrice(servicePrice));
                         startActivity(intent);
                         finish();
                     }

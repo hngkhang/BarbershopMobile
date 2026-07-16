@@ -65,6 +65,9 @@
         <activity
             android:name=".util.MainActivity"
             android:exported="false" />
+        <service
+            android:name=".services.MakePaymentService"
+            android:exported="false" />
     </application>
 
 </manifest>

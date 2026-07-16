@@ -1,13 +1,18 @@
 package com.example.barbershop.util;
 
 import com.example.barbershop.R;
+import com.example.barbershop.services.MakePaymentService;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.IBinder;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,12 +27,46 @@ public class PaymentActivity extends AppCompatActivity {
 
     private CountDownTimer paymentCountdownTimer;
     private String transferContent;
+    private String appointmentDocumentId;
+    private String serviceName;
+    private String barberName;
+    private String barberExperience;
+    private String barberSpecialty;
+    private String dateLabel;
+    private String startTime;
+    private String endTime;
+    private String amount;
+    private String appointmentNote;
+    private String appointmentCreatedAt;
+    private int durationMinutes;
+    private double totalPrice;
+    private MakePaymentService makePaymentService;
+    private boolean paymentServiceBound;
+    private final ServiceConnection paymentServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MakePaymentService.MakePaymentBinder binder = (MakePaymentService.MakePaymentBinder) service;
+            makePaymentService = binder.getService();
+            paymentServiceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            makePaymentService = null;
+            paymentServiceBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment);
 
+        bindService(
+                new Intent(this, MakePaymentService.class),
+                paymentServiceConnection,
+                Context.BIND_AUTO_CREATE
+        );
         bindTemporaryPaymentDetails();
         setupActions();
         startCountdown();
@@ -38,19 +77,29 @@ public class PaymentActivity extends AppCompatActivity {
         if (paymentCountdownTimer != null) {
             paymentCountdownTimer.cancel();
         }
+        if (paymentServiceBound) {
+            unbindService(paymentServiceConnection);
+            paymentServiceBound = false;
+        }
         super.onDestroy();
     }
 
     private void bindTemporaryPaymentDetails() {
         Intent intent = getIntent();
-        String serviceName = readStringExtra(intent, "selectedServiceName", "Haircut");
+        appointmentDocumentId = readStringExtra(intent, "appointmentId", "");
+        serviceName = readStringExtra(intent, "selectedServiceName", "Haircut");
         String addonServiceName = readStringExtra(intent, "addonServiceName", "Classic Cut");
-        String barberName = readStringExtra(intent, "selectedBarberName", "Michael");
-        String dateLabel = readStringExtra(intent, "selectedDateLabel", "Tomorrow, May 25, 2025");
-        String startTime = readStringExtra(intent, "selectedStartTime", "2:00 PM");
-        int durationMinutes = intent.getIntExtra("totalDurationMinutes", 45);
-        double totalPrice = intent.getDoubleExtra("totalPrice", 25.0);
-        String amount = readStringExtra(intent, "amount", String.format(Locale.US, "$%.2f", totalPrice));
+        barberName = readStringExtra(intent, "selectedBarberName", "Michael");
+        barberExperience = readStringExtra(intent, "barberExperience", "");
+        barberSpecialty = readStringExtra(intent, "barberSpecialty", getString(R.string.barber_specialty_not_available));
+        dateLabel = readStringExtra(intent, "selectedDateLabel", "Tomorrow, May 25, 2025");
+        startTime = readStringExtra(intent, "selectedStartTime", "2:00 PM");
+        endTime = readStringExtra(intent, "selectedEndTime", "");
+        appointmentNote = readStringExtra(intent, "appointmentNote", "");
+        appointmentCreatedAt = readStringExtra(intent, "appointmentCreatedAt", "");
+        durationMinutes = intent.getIntExtra("totalDurationMinutes", 45);
+        totalPrice = intent.getDoubleExtra("totalPrice", parseAmount(readStringExtra(intent, "amount", "$25.00")));
+        amount = readStringExtra(intent, "amount", String.format(Locale.US, "$%.2f", totalPrice));
 
         ((TextView) findViewById(R.id.textPaymentBarberInitial)).setText(getInitial(barberName));
         ((TextView) findViewById(R.id.textPaymentBarber)).setText(barberName);
@@ -90,15 +139,104 @@ public class PaymentActivity extends AppCompatActivity {
                 Toast.makeText(this, R.string.payment_security_note, Toast.LENGTH_SHORT).show()
         );
         findViewById(R.id.buttonCopyTransferContent).setOnClickListener(v -> copyTransferContent());
-        findViewById(R.id.buttonIHavePaid).setOnClickListener(v -> {
-            // Demo-only confirmation. Replace with PaymentService verification before production.
-            ((TextView) findViewById(R.id.buttonIHavePaid)).setText(R.string.payment_demo_confirmed_action);
-            findViewById(R.id.buttonIHavePaid).setEnabled(false);
-            Toast.makeText(this, R.string.payment_demo_confirmed, Toast.LENGTH_SHORT).show();
-        });
-        findViewById(R.id.buttonCheckStatus).setOnClickListener(v -> {
-            Toast.makeText(this, R.string.payment_demo_confirmed, Toast.LENGTH_SHORT).show();
-        });
+        findViewById(R.id.buttonIHavePaid).setOnClickListener(v -> makeBankingPayment());
+        findViewById(R.id.buttonCheckStatus).setOnClickListener(v -> checkPaymentStatus());
+    }
+
+    private void makeBankingPayment() {
+        if (!hasPaymentService()) {
+            return;
+        }
+        if (appointmentDocumentId.isEmpty()) {
+            Toast.makeText(this, R.string.payment_missing_appointment, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        View paidButton = findViewById(R.id.buttonIHavePaid);
+        paidButton.setEnabled(false);
+        paidButton.setAlpha(0.5f);
+        ((TextView) paidButton).setText(R.string.payment_recording);
+
+        makePaymentService.makePayment(
+                appointmentDocumentId,
+                totalPrice,
+                MakePaymentService.METHOD_BANKING,
+                new MakePaymentService.PaymentCallback<MakePaymentService.PaymentResult>() {
+                    @Override
+                    public void onSuccess(MakePaymentService.PaymentResult data) {
+                        ((TextView) paidButton).setText(R.string.payment_demo_confirmed_action);
+                        Toast.makeText(PaymentActivity.this, R.string.payment_banking_recorded, Toast.LENGTH_SHORT).show();
+                        openPaidAppointmentDetail(data);
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        paidButton.setEnabled(true);
+                        paidButton.setAlpha(1.0f);
+                        ((TextView) paidButton).setText(R.string.payment_action_paid);
+                        Toast.makeText(PaymentActivity.this, errorMessage(exception), Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    private void openPaidAppointmentDetail(MakePaymentService.PaymentResult paymentResult) {
+        Intent intent = new Intent(this, AppointmentDetailActivity.class);
+        intent.putExtra("appointmentId", appointmentDocumentId);
+        intent.putExtra("appointmentStatus", getString(R.string.appointment_status_upcoming));
+        intent.putExtra("barberName", barberName);
+        intent.putExtra("barberExperience", barberExperience);
+        intent.putExtra("barberSpecialty", barberSpecialty);
+        intent.putExtra("serviceName", serviceName);
+        intent.putExtra("appointmentPrice", amount);
+        intent.putExtra("appointmentDate", dateLabel);
+        intent.putExtra("appointmentStartTime", startTime);
+        intent.putExtra("appointmentEndTime", endTime);
+        intent.putExtra("appointmentDuration", String.format(Locale.US, "%d min", durationMinutes));
+        intent.putExtra("paymentStatus", displayPaymentStatus(paymentResult.getStatus()));
+        intent.putExtra("paymentMethod", paymentResult.getMethod());
+        intent.putExtra("appointmentNote", appointmentNote);
+        intent.putExtra("appointmentCreatedAt", appointmentCreatedAt);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+    }
+
+    private void checkPaymentStatus() {
+        if (!hasPaymentService()) {
+            return;
+        }
+        if (appointmentDocumentId.isEmpty()) {
+            Toast.makeText(this, R.string.payment_missing_appointment, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        makePaymentService.getPaymentStatus(
+                appointmentDocumentId,
+                new MakePaymentService.PaymentCallback<String>() {
+                    @Override
+                    public void onSuccess(String status) {
+                        Toast.makeText(
+                                PaymentActivity.this,
+                                getString(R.string.payment_status_format, displayPaymentStatus(status)),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        Toast.makeText(PaymentActivity.this, errorMessage(exception), Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    private boolean hasPaymentService() {
+        if (!paymentServiceBound || makePaymentService == null) {
+            Toast.makeText(this, R.string.payment_service_not_ready, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
     private void startCountdown() {
@@ -148,5 +286,28 @@ public class PaymentActivity extends AppCompatActivity {
 
     private String rowText(String label, String value) {
         return String.format(Locale.US, "%s  %s", label, value);
+    }
+
+    private double parseAmount(String value) {
+        try {
+            return Double.parseDouble(value.replaceAll("[^0-9.]", ""));
+        } catch (NumberFormatException exception) {
+            return 0.0;
+        }
+    }
+
+    private String displayPaymentStatus(String value) {
+        if ("PAID".equalsIgnoreCase(value)) {
+            return getString(R.string.appointment_payment_paid);
+        } else if ("REFUNDED".equalsIgnoreCase(value)) {
+            return getString(R.string.appointment_payment_refunded);
+        }
+        return getString(R.string.appointment_payment_not_paid);
+    }
+
+    private String errorMessage(Exception exception) {
+        return exception == null || exception.getMessage() == null
+                ? getString(R.string.state_error_placeholder)
+                : exception.getMessage();
     }
 }

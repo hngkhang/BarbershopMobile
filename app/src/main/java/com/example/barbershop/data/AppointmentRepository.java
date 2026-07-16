@@ -61,8 +61,12 @@ public class AppointmentRepository {
         values.put("serviceId", serviceId);
         values.put("startAt", startAt);
         values.put("endAt", endAt);
+        long appointmentId = System.currentTimeMillis();
+        values.put("appointmentId", appointmentId);
         values.put("createdAt", FieldValue.serverTimestamp());
         values.put("status", "UPCOMING");
+        values.put("paymentStatus", "UNPAID");
+        values.put("paymentId", 0L);
         values.put("note", note == null ? "" : note);
         values.put("cancelledAt", null);
 
