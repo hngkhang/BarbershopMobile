@@ -39,6 +39,19 @@ public class BarberRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    public void getAllBarbersForAppointmentLookup(RepositoryCallback<List<Barber>> callback) {
+        firestore.collection(COLLECTION_BARBERS)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Barber> barbers = new ArrayList<>();
+                    for (int index = 0; index < querySnapshot.size(); index++) {
+                        barbers.add(Barber.fromDocument(querySnapshot.getDocuments().get(index)));
+                    }
+                    callback.onSuccess(barbers);
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
     public void getBarberById(String barberId, RepositoryCallback<Barber> callback) {
         firestore.collection(COLLECTION_BARBERS)
                 .document(barberId)
