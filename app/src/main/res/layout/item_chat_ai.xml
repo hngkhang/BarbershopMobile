@@ -67,6 +67,16 @@
                 android:background="@drawable/bg_thinking_dot" />
         </LinearLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonReviewBooking"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginTop="@dimen/space_12"
+            android:text="@string/ai_review_booking"
+            android:textColor="@color/color_primary"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/textChatTime"
             style="@style/TextAppearance_ArtBarbershop_Caption"

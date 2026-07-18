@@ -21,6 +21,17 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     public static final int TYPE_THINKING = 3;
 
     private final List<ChatMessage> messages = new ArrayList<>();
+    private OnBookingReviewClickListener onBookingReviewClickListener;
+
+    public interface OnBookingReviewClickListener {
+        void onBookingReviewClick(long bookingDraftId);
+    }
+
+    public void setOnBookingReviewClickListener(
+            OnBookingReviewClickListener onBookingReviewClickListener
+    ) {
+        this.onBookingReviewClickListener = onBookingReviewClickListener;
+    }
 
     public void submitList(List<ChatMessage> nextMessages) {
         messages.clear();
@@ -67,7 +78,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (holder instanceof UserMessageViewHolder) {
             ((UserMessageViewHolder) holder).bind(message);
         } else if (holder instanceof AiMessageViewHolder) {
-            ((AiMessageViewHolder) holder).bind(message);
+            ((AiMessageViewHolder) holder).bind(message, onBookingReviewClickListener);
         }
     }
 
@@ -96,19 +107,26 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         private final TextView textMessage;
         private final TextView textTime;
         private final LinearLayout layoutThinkingDots;
+        private final View buttonReviewBooking;
 
         AiMessageViewHolder(@NonNull View itemView) {
             super(itemView);
             textMessage = itemView.findViewById(R.id.textChatMessage);
             textTime = itemView.findViewById(R.id.textChatTime);
             layoutThinkingDots = itemView.findViewById(R.id.layoutThinkingDots);
+            buttonReviewBooking = itemView.findViewById(R.id.buttonReviewBooking);
         }
 
-        void bind(ChatMessage message) {
+        void bind(ChatMessage message, OnBookingReviewClickListener listener) {
             boolean thinking = message.type == TYPE_THINKING;
             textMessage.setText(message.message);
             textTime.setText(message.time);
             layoutThinkingDots.setVisibility(thinking ? View.VISIBLE : View.GONE);
+            boolean hasBookingReview = message.bookingDraftId > 0L && !thinking;
+            buttonReviewBooking.setVisibility(hasBookingReview ? View.VISIBLE : View.GONE);
+            buttonReviewBooking.setOnClickListener(hasBookingReview && listener != null
+                    ? v -> listener.onBookingReviewClick(message.bookingDraftId)
+                    : null);
         }
     }
 
@@ -116,11 +134,17 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         public final int type;
         public final String message;
         public final String time;
+        public final long bookingDraftId;
 
         public ChatMessage(int type, String message, String time) {
+            this(type, message, time, -1L);
+        }
+
+        public ChatMessage(int type, String message, String time, long bookingDraftId) {
             this.type = type;
             this.message = message;
             this.time = time;
+            this.bookingDraftId = bookingDraftId;
         }
     }
 }

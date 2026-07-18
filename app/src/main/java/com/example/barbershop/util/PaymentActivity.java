@@ -22,6 +22,7 @@ import java.util.Locale;
 
 public class PaymentActivity extends AppCompatActivity {
 
+    public static final String EXTRA_RETURN_TO_APPOINTMENTS = "returnToAppointments";
     private static final long PAYMENT_WINDOW_MILLIS = 15 * 60 * 1000L;
     private static final long ONE_SECOND_MILLIS = 1000L;
 
@@ -42,6 +43,7 @@ public class PaymentActivity extends AppCompatActivity {
     private double totalPrice;
     private MakePaymentService makePaymentService;
     private boolean paymentServiceBound;
+    private boolean returnToAppointmentsAfterPayment;
     private final ServiceConnection paymentServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -97,6 +99,10 @@ public class PaymentActivity extends AppCompatActivity {
         endTime = readStringExtra(intent, "selectedEndTime", "");
         appointmentNote = readStringExtra(intent, "appointmentNote", "");
         appointmentCreatedAt = readStringExtra(intent, "appointmentCreatedAt", "");
+        returnToAppointmentsAfterPayment = intent.getBooleanExtra(
+                EXTRA_RETURN_TO_APPOINTMENTS,
+                false
+        );
         durationMinutes = intent.getIntExtra("totalDurationMinutes", 45);
         totalPrice = intent.getDoubleExtra("totalPrice", parseAmount(readStringExtra(intent, "amount", "$25.00")));
         amount = readStringExtra(intent, "amount", String.format(Locale.US, "$%.2f", totalPrice));
@@ -181,6 +187,13 @@ public class PaymentActivity extends AppCompatActivity {
     }
 
     private void openPaidAppointmentDetail(MakePaymentService.PaymentResult paymentResult) {
+        if (returnToAppointmentsAfterPayment) {
+            Intent intent = new Intent(this, AppointmentActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+            return;
+        }
         Intent intent = new Intent(this, AppointmentDetailActivity.class);
         intent.putExtra("appointmentId", appointmentDocumentId);
         intent.putExtra("appointmentStatus", getString(R.string.appointment_status_upcoming));

@@ -65,6 +65,15 @@ public class ServiceSuggestionAdapter extends RecyclerView.Adapter<ServiceSugges
         notifyItemChanged(selectedIndex);
     }
 
+    public void setSelectedServiceId(long serviceId) {
+        for (ServiceSuggestion service : services) {
+            if (service.serviceId == serviceId) {
+                setSelectedSuggestion(service);
+                return;
+            }
+        }
+    }
+
     static class ServiceSuggestionViewHolder extends RecyclerView.ViewHolder {
         private final MaterialCardView cardView;
         private final FrameLayout imageContainer;
@@ -104,6 +113,7 @@ public class ServiceSuggestionAdapter extends RecyclerView.Adapter<ServiceSugges
     }
 
     public static class ServiceSuggestion {
+        public final long serviceId;
         public final String name;
         public final String detail;
         public final String duration;
@@ -113,6 +123,7 @@ public class ServiceSuggestionAdapter extends RecyclerView.Adapter<ServiceSugges
         public final int iconRes;
 
         public ServiceSuggestion(
+                long serviceId,
                 String name,
                 String detail,
                 String duration,
@@ -121,6 +132,7 @@ public class ServiceSuggestionAdapter extends RecyclerView.Adapter<ServiceSugges
                 int imageBackgroundRes,
                 int iconRes
         ) {
+            this.serviceId = serviceId;
             this.name = name;
             this.detail = detail;
             this.duration = duration;
