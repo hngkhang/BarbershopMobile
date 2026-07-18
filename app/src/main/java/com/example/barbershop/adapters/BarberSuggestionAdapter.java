@@ -63,6 +63,15 @@ public class BarberSuggestionAdapter extends RecyclerView.Adapter<BarberSuggesti
         notifyItemChanged(selectedIndex);
     }
 
+    public void setSelectedBarberId(long barberId) {
+        for (BarberSuggestion barber : barbers) {
+            if (barber.barberId == barberId) {
+                setSelectedSuggestion(barber);
+                return;
+            }
+        }
+    }
+
     static class BarberSuggestionViewHolder extends RecyclerView.ViewHolder {
         private final MaterialCardView cardView;
         private final TextView textInitial;
@@ -99,6 +108,7 @@ public class BarberSuggestionAdapter extends RecyclerView.Adapter<BarberSuggesti
     }
 
     public static class BarberSuggestion {
+        public final long barberId;
         public final String name;
         public final String initial;
         public final String experience;
@@ -106,12 +116,14 @@ public class BarberSuggestionAdapter extends RecyclerView.Adapter<BarberSuggesti
         public final String specialty;
 
         public BarberSuggestion(
+                long barberId,
                 String name,
                 String initial,
                 String experience,
                 String rating,
                 String specialty
         ) {
+            this.barberId = barberId;
             this.name = name;
             this.initial = initial;
             this.experience = experience;

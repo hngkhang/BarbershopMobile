@@ -104,8 +104,6 @@ public class HomeActivity extends AppCompatActivity {
         );
 
         findViewById(R.id.searchBar).setOnClickListener(view -> openServices());
-        findViewById(R.id.cardAiBooking).setOnClickListener(view -> openAiBooking());
-        findViewById(R.id.buttonTryAi).setOnClickListener(view -> openAiBooking());
         findViewById(R.id.textViewAllAppointments).setOnClickListener(view -> openAppointments());
         findViewById(R.id.cardUpcomingAppointment).setOnClickListener(view -> openUpcomingAppointment());
         findViewById(R.id.textViewAllServices).setOnClickListener(view -> openServices());

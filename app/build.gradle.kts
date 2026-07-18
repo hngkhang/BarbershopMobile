@@ -49,4 +49,14 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-analytics")
+    // Add the dependencies for the Firebase AI Logic and App Check libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-ai")
+    implementation("com.google.firebase:firebase-appcheck-debug")
+
+    // Required for one-shot operations (to use `ListenableFuture` from Guava Android)
+    implementation("com.google.guava:guava:31.0.1-android")
+
+    // Required for streaming operations (to use `Publisher` from Reactive Streams)
+    implementation("org.reactivestreams:reactive-streams:1.0.4")
 }

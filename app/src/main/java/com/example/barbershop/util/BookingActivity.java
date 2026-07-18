@@ -41,6 +41,9 @@ public class BookingActivity extends AppCompatActivity {
     public static final String EXTRA_BARBER_ID = "barberId";
     public static final String EXTRA_BARBER_NAME = "barberName";
     public static final String EXTRA_BARBER_EXPERIENCE = "barberExperience";
+    public static final String EXTRA_START_AT_MILLIS = "startAtMillis";
+    public static final String EXTRA_END_AT_MILLIS = "endAtMillis";
+    public static final String EXTRA_AI_BOOKING = "aiBooking";
 
     private static final int REQUEST_SELECT_SERVICE = 1001;
     private static final int REQUEST_SELECT_BARBER = 1002;
@@ -58,6 +61,8 @@ public class BookingActivity extends AppCompatActivity {
     private String selectedBarberExperience = "";
     private DateOption selectedDateOption;
     private TimeSlot selectedTimeSlot;
+    private long suggestedStartAtMillis = -1L;
+    private long suggestedEndAtMillis = -1L;
 
     private TextView textSelectedServiceName;
     private TextView textSelectedServicePrice;
@@ -116,8 +121,14 @@ public class BookingActivity extends AppCompatActivity {
 
     private void readBookingSelection() {
         long serviceId = getIntent().getLongExtra(EXTRA_SERVICE_ID, -1L);
+        long barberId = getIntent().getLongExtra(EXTRA_BARBER_ID, -1L);
+        suggestedStartAtMillis = getIntent().getLongExtra(EXTRA_START_AT_MILLIS, -1L);
+        suggestedEndAtMillis = getIntent().getLongExtra(EXTRA_END_AT_MILLIS, -1L);
         if (serviceId > 0L) {
             loadSelectedService(serviceId);
+        }
+        if (barberId > 0L) {
+            loadSelectedBarber(barberId);
         }
     }
 
@@ -170,11 +181,13 @@ public class BookingActivity extends AppCompatActivity {
         }
 
         if (requestCode == REQUEST_SELECT_SERVICE) {
+            clearSuggestedSlot();
             long serviceId = data.getLongExtra(EXTRA_SERVICE_ID, -1L);
             if (serviceId > 0L) {
                 loadSelectedService(serviceId);
             }
         } else if (requestCode == REQUEST_SELECT_BARBER) {
+            clearSuggestedSlot();
             long barberId = data.getLongExtra(EXTRA_BARBER_ID, -1L);
             if (barberId > 0L) {
                 selectedBarberId = barberId;
@@ -212,6 +225,34 @@ public class BookingActivity extends AppCompatActivity {
         });
     }
 
+    private void loadSelectedBarber(long barberId) {
+        barberRepository.getAllBarbers(new BarberRepository.RepositoryCallback<List<com.example.barbershop.models.Barber>>() {
+            @Override
+            public void onSuccess(List<com.example.barbershop.models.Barber> barbers) {
+                for (com.example.barbershop.models.Barber barber : barbers) {
+                    try {
+                        if (Long.parseLong(barber.getBarberId()) == barberId) {
+                            selectedBarberId = barberId;
+                            selectedBarberName = barber.getName();
+                            selectedBarberExperience = barber.getExperience();
+                            loadBarberAvailability();
+                            refreshBookingUi();
+                            return;
+                        }
+                    } catch (NumberFormatException ignored) {
+                        // Ignore a malformed barberId document and continue searching.
+                    }
+                }
+                Toast.makeText(BookingActivity.this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                Toast.makeText(BookingActivity.this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void loadBarberAvailability() {
         barberSchedules.clear();
         barberAppointments.clear();
@@ -229,6 +270,7 @@ public class BookingActivity extends AppCompatActivity {
                                 barberAppointments.addAll(appointments);
                                 availabilityLoading = false;
                                 rebuildAvailableDates();
+                                applySuggestedSlotIfStillAvailable();
                                 refreshBookingUi();
                             }
 
@@ -272,6 +314,30 @@ public class BookingActivity extends AppCompatActivity {
                 dateOptions.add(option);
             }
         }
+    }
+
+    private void applySuggestedSlotIfStillAvailable() {
+        if (suggestedStartAtMillis <= 0L || suggestedEndAtMillis <= 0L) {
+            return;
+        }
+        for (DateOption option : dateOptions) {
+            if (!sameDay(option.dayStart.getTime(), suggestedStartAtMillis)) {
+                continue;
+            }
+            for (TimeSlot slot : calculateSlotsForDate(option)) {
+                if (slot.startAt == suggestedStartAtMillis && slot.endAt == suggestedEndAtMillis) {
+                    selectedDateOption = option;
+                    selectedTimeSlot = slot;
+                    return;
+                }
+            }
+        }
+        clearSuggestedSlot();
+    }
+
+    private void clearSuggestedSlot() {
+        suggestedStartAtMillis = -1L;
+        suggestedEndAtMillis = -1L;
     }
 
     private boolean containsDate(DateOption target) {
@@ -512,6 +578,7 @@ public class BookingActivity extends AppCompatActivity {
         intent.putExtra("startAtMillis", selectedTimeSlot.startAt);
         intent.putExtra("endAtMillis", selectedTimeSlot.endAt);
         intent.putExtra("bookingNote", bookingNote());
+        intent.putExtra(EXTRA_AI_BOOKING, getIntent().getBooleanExtra(EXTRA_AI_BOOKING, false));
         startActivity(intent);
     }
 

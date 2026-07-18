@@ -30,6 +30,7 @@ public class BookingConfirmActivity extends AppCompatActivity {
     private String bookingNote;
     private long startAtMillis;
     private long endAtMillis;
+    private boolean isAiBooking;
     private AppointmentRepository appointmentRepository;
     private View confirmButton;
 
@@ -56,6 +57,7 @@ public class BookingConfirmActivity extends AppCompatActivity {
         bookingNote = readStringExtra(intent, "bookingNote");
         startAtMillis = intent.getLongExtra("startAtMillis", -1L);
         endAtMillis = intent.getLongExtra("endAtMillis", -1L);
+        isAiBooking = intent.getBooleanExtra(BookingActivity.EXTRA_AI_BOOKING, false);
         if (serviceDuration <= 0 && endAtMillis > startAtMillis) {
             serviceDuration = (int) ((endAtMillis - startAtMillis) / 60_000L);
         }
@@ -127,6 +129,7 @@ public class BookingConfirmActivity extends AppCompatActivity {
                         intent.putExtra("totalDurationMinutes", serviceDuration);
                         intent.putExtra("totalPrice", servicePrice);
                         intent.putExtra("amount", formatPrice(servicePrice));
+                        intent.putExtra(PaymentActivity.EXTRA_RETURN_TO_APPOINTMENTS, isAiBooking);
                         startActivity(intent);
                         finish();
                     }
