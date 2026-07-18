@@ -229,6 +229,13 @@
     <string name="appointment_message_todo">Messaging will connect to barber contact logic later.</string>
     <string name="appointment_notifications_todo">Notifications screen will be connected later.</string>
     <string name="appointment_more_todo">Appointment menu will be connected later.</string>
+    <string name="appointment_reminder_channel_name">Appointment reminders</string>
+    <string name="appointment_reminder_channel_description">Reminders one day before booked appointments.</string>
+    <string name="appointment_reminder_title">Appointment tomorrow</string>
+    <string name="appointment_reminder_content">Your %1$s appointment with %2$s is tomorrow at %3$s.</string>
+    <string name="appointment_reminder_default_service">barbershop</string>
+    <string name="appointment_reminder_default_barber">your barber</string>
+    <string name="appointment_reminder_default_time">the scheduled time</string>
     <string name="appointment_status_upcoming">Upcoming</string>
     <string name="appointment_status_pending">Pending</string>
     <string name="appointment_status_completed">Completed</string>

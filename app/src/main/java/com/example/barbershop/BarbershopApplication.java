@@ -3,6 +3,7 @@ package com.example.barbershop;
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
 
+import com.example.barbershop.services.AppointmentReminderScheduler;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.appcheck.FirebaseAppCheck;
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
@@ -23,5 +24,6 @@ public class BarbershopApplication extends Application {
                     DebugAppCheckProviderFactory.getInstance()
             );
         }
+        AppointmentReminderScheduler.createNotificationChannel(this);
     }
 }

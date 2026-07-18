@@ -2,15 +2,21 @@ package com.example.barbershop.util;
 
 import com.example.barbershop.R;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.barbershop.data.AppointmentRepository;
+import com.example.barbershop.services.AppointmentReminderScheduler;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -20,6 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class BookingConfirmActivity extends AppCompatActivity {
+    private static final int REQUEST_POST_NOTIFICATIONS = 1001;
 
     private long serviceId;
     private long barberId;
@@ -102,6 +109,7 @@ public class BookingConfirmActivity extends AppCompatActivity {
             return;
         }
 
+        requestNotificationPermissionIfNeeded();
         setSubmitting(true);
         saveAppointment(currentUser);
     }
@@ -117,6 +125,13 @@ public class BookingConfirmActivity extends AppCompatActivity {
                 new AppointmentRepository.RepositoryCallback<String>() {
                     @Override
                     public void onSuccess(String documentId) {
+                        AppointmentReminderScheduler.scheduleReminder(
+                                BookingConfirmActivity.this,
+                                documentId,
+                                serviceName,
+                                barberName,
+                                startAtMillis
+                        );
                         Toast.makeText(BookingConfirmActivity.this, R.string.booking_created_success, Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(BookingConfirmActivity.this, PaymentActivity.class);
                         intent.putExtra("appointmentId", documentId);
@@ -149,6 +164,21 @@ public class BookingConfirmActivity extends AppCompatActivity {
     private boolean hasValidBooking() {
         return serviceId > 0L && barberId > 0L
                 && startAtMillis > 0L && endAtMillis > startAtMillis;
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                REQUEST_POST_NOTIFICATIONS
+        );
     }
 
     private void setSubmitting(boolean submitting) {
