@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.example.barbershop.services.SyncService;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -34,6 +35,18 @@ public class SplashActivity extends AppCompatActivity {
 
         if (currentUser == null) {
             openLoginScreen();
+            return;
+        }
+
+        // FirebaseAuth keeps the most recently verified session on device. Do not discard it
+        // merely because reload() cannot reach Firebase while the user is offline.
+        if (!SyncService.hasUsableNetwork(this)) {
+            if (currentUser.isEmailVerified()) {
+                openHomeScreen();
+            } else {
+                firebaseAuth.signOut();
+                openLoginScreen();
+            }
             return;
         }
 

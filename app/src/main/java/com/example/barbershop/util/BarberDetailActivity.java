@@ -52,7 +52,7 @@ public class BarberDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barber_detail);
 
-        barberRepository = new BarberRepository();
+        barberRepository = new BarberRepository(this);
         bindViews();
         setupTopBar();
         setupLists();

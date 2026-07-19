@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.example.barbershop.services.SyncService;
 
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -112,6 +113,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void openHomeScreen() {
+        SyncService.scheduleSync(this, "user_signed_in");
         Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK

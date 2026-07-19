@@ -43,7 +43,7 @@ public class BarberListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barber_list);
-        barberRepository = new BarberRepository();
+        barberRepository = new BarberRepository(this);
 
         setupTopBar();
         setupRecyclerView();

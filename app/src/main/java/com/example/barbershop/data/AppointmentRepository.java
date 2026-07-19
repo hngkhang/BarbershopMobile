@@ -1,9 +1,12 @@
 package com.example.barbershop.data;
 
+import android.content.Context;
+
 import com.example.barbershop.models.Appointment;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.barbershop.services.SyncService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +15,17 @@ import java.util.Map;
 
 public class AppointmentRepository {
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private final Context appContext;
+
+    public AppointmentRepository(Context context) {
+        appContext = context.getApplicationContext();
+    }
 
     public void getAppointmentsForBarber(long barberId, RepositoryCallback<List<Appointment>> callback) {
+        if (!SyncService.hasUsableNetwork(appContext)) {
+            loadCachedAppointments(barberId, callback);
+            return;
+        }
         firestore.collection("appointments")
                 .whereEqualTo("barberId", barberId)
                 .get()
@@ -27,9 +39,10 @@ public class AppointmentRepository {
                             appointments.add(appointment);
                         }
                     }
+                    OfflineDataStore.cacheAppointments(appContext, appointments);
                     callback.onSuccess(appointments);
                 })
-                .addOnFailureListener(callback::onError);
+                .addOnFailureListener(exception -> loadCachedAppointmentsOrError(barberId, callback, exception));
     }
 
     public void getAppointmentsForUser(String userUid, RepositoryCallback<List<Appointment>> callback) {
@@ -55,25 +68,38 @@ public class AppointmentRepository {
             String note,
             RepositoryCallback<String> callback
     ) {
-        Map<String, Object> values = new HashMap<>();
-        values.put("userUid", userUid);
-        values.put("barberId", barberId);
-        values.put("serviceId", serviceId);
-        values.put("startAt", startAt);
-        values.put("endAt", endAt);
-        long appointmentId = System.currentTimeMillis();
-        values.put("appointmentId", appointmentId);
-        values.put("createdAt", FieldValue.serverTimestamp());
-        values.put("status", "UPCOMING");
-        values.put("paymentStatus", "UNPAID");
-        values.put("paymentId", 0L);
-        values.put("note", note == null ? "" : note);
-        values.put("cancelledAt", null);
+        OfflineDataStore.createPendingAppointment(appContext, userUid, barberId, serviceId, startAt, endAt, note,
+                new OfflineDataStore.Callback<String>() {
+                    @Override
+                    public void onSuccess(String localId) {
+                        SyncService.scheduleSync(appContext, "appointment_created");
+                        callback.onSuccess(localId);
+                    }
 
-        firestore.collection("appointments")
-                .add(values)
-                .addOnSuccessListener(reference -> callback.onSuccess(reference.getId()))
-                .addOnFailureListener(callback::onError);
+                    @Override
+                    public void onError(Exception exception) {
+                        callback.onError(exception);
+                    }
+                });
+    }
+
+    private void loadCachedAppointments(long barberId, RepositoryCallback<List<Appointment>> callback) {
+        OfflineDataStore.readAppointmentsForBarber(appContext, barberId,
+                new OfflineDataStore.Callback<List<Appointment>>() {
+                    @Override public void onSuccess(List<Appointment> appointments) { callback.onSuccess(appointments); }
+                    @Override public void onError(Exception exception) { callback.onError(exception); }
+                });
+    }
+
+    private void loadCachedAppointmentsOrError(long barberId, RepositoryCallback<List<Appointment>> callback,
+                                               Exception remoteException) {
+        OfflineDataStore.readAppointmentsForBarber(appContext, barberId,
+                new OfflineDataStore.Callback<List<Appointment>>() {
+                    @Override public void onSuccess(List<Appointment> appointments) {
+                        if (appointments.isEmpty()) callback.onError(remoteException); else callback.onSuccess(appointments);
+                    }
+                    @Override public void onError(Exception exception) { callback.onError(remoteException); }
+                });
     }
 
     public interface RepositoryCallback<T> {

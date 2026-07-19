@@ -44,7 +44,7 @@ public class ServiceListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_service_list);
-        serviceRepository = new ServiceRepository();
+        serviceRepository = new ServiceRepository(this);
 
         setupTopBar();
         setupRecyclerView();

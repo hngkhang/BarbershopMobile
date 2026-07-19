@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.barbershop.data.AppointmentRepository;
 import com.example.barbershop.services.AppointmentReminderScheduler;
+import com.example.barbershop.services.SyncService;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,7 +47,7 @@ public class BookingConfirmActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking_confirm);
 
-        appointmentRepository = new AppointmentRepository();
+        appointmentRepository = new AppointmentRepository(this);
         confirmButton = findViewById(R.id.buttonConfirmPay);
         readBookingData();
         populateSummary();
@@ -115,6 +116,7 @@ public class BookingConfirmActivity extends AppCompatActivity {
     }
 
     private void saveAppointment(FirebaseUser currentUser) {
+        final boolean savedOffline = !SyncService.hasUsableNetwork(this);
         appointmentRepository.createAppointment(
                 currentUser.getUid(),
                 barberId,
@@ -132,7 +134,16 @@ public class BookingConfirmActivity extends AppCompatActivity {
                                 barberName,
                                 startAtMillis
                         );
-                        Toast.makeText(BookingConfirmActivity.this, R.string.booking_created_success, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BookingConfirmActivity.this,
+                                savedOffline ? R.string.booking_created_offline : R.string.booking_created_success,
+                                Toast.LENGTH_LONG).show();
+                        if (savedOffline) {
+                            Intent homeIntent = new Intent(BookingConfirmActivity.this, HomeActivity.class);
+                            homeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(homeIntent);
+                            finish();
+                            return;
+                        }
                         Intent intent = new Intent(BookingConfirmActivity.this, PaymentActivity.class);
                         intent.putExtra("appointmentId", documentId);
                         intent.putExtra("selectedServiceName", serviceName);
