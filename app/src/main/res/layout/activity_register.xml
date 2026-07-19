@@ -19,47 +19,16 @@
         android:paddingEnd="@dimen/screen_horizontal_padding"
         android:paddingBottom="@dimen/space_24">
 
-        <ImageButton
-            android:id="@+id/buttonBack"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:background="@android:color/transparent"
-            android:contentDescription="Back"
-            android:padding="@dimen/space_12"
-            android:src="@drawable/ic_arrow_back"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/imageRegisterBrand"
-            android:layout_width="@dimen/avatar_size_large"
-            android:layout_height="@dimen/avatar_size_large"
-            android:contentDescription="Art Barbershop illustration"
-            android:src="@drawable/ic_barber_pole"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <TextView
             android:id="@+id/textCreateAccount"
             style="@style/TextAppearance_ArtBarbershop_ScreenTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_48"
+            android:layout_marginTop="@dimen/space_64"
             android:text="Create Account"
-            app:layout_constraintEnd_toStartOf="@id/imageRegisterBrand"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/buttonBack" />
-
-        <TextView
-            android:id="@+id/textRegisterSubtitle"
-            style="@style/TextAppearance_ArtBarbershop_Body"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_6"
-            android:text="Join Art Barbershop and book your perfect look."
-            app:layout_constraintEnd_toStartOf="@id/imageRegisterBrand"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textCreateAccount" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputNameLayout"
@@ -70,7 +39,7 @@
             android:hint="Full Name"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textRegisterSubtitle"
+            app:layout_constraintTop_toBottomOf="@id/textCreateAccount"
             app:startIconDrawable="@drawable/ic_person">
 
             <com.google.android.material.textfield.TextInputEditText

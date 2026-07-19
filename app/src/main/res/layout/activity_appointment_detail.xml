@@ -41,20 +41,9 @@
             android:maxLines="1"
             android:text="@string/screen_appointment_detail_title"
             app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-            app:layout_constraintEnd_toStartOf="@id/buttonDetailMore"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/buttonBack"
             app:layout_constraintTop_toTopOf="@id/buttonBack" />
-
-        <ImageButton
-            android:id="@+id/buttonDetailMore"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:background="@drawable/bg_icon_button"
-            android:contentDescription="@string/action_more_options"
-            android:padding="@dimen/space_12"
-            android:src="@drawable/ic_more_horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <FrameLayout
             android:id="@+id/detailTitleDivider"
@@ -117,8 +106,8 @@
                         android:gravity="center"
                         android:minHeight="@dimen/badge_min_height"
                         android:textColor="@color/color_success"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/textDetailBarberName"
                         tools:text="Upcoming" />
 
                     <TextView
@@ -131,39 +120,20 @@
                         android:gravity="center"
                         android:minHeight="@dimen/badge_min_height"
                         android:textColor="@color/color_payment_unpaid"
-                        app:layout_constraintStart_toEndOf="@id/textDetailStatus"
-                        app:layout_constraintTop_toTopOf="@id/textDetailStatus"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/textDetailBarberExperience"
                         tools:text="Not Paid" />
-
-                    <TextView
-                        style="@style/TextAppearance_ArtBarbershop_Caption"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/appointment_id_label"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textAppointmentId"
-                        style="@style/TextAppearance_ArtBarbershop_CardTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_2"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/textDetailStatus"
-                        tools:text="#AB25678" />
 
                     <TextView
                         android:id="@+id/textDetailBarberInitial"
                         style="@style/TextAppearance_ArtBarbershop_CardTitle"
                         android:layout_width="@dimen/appointment_detail_avatar_size"
                         android:layout_height="@dimen/appointment_detail_avatar_size"
-                        android:layout_marginTop="@dimen/space_18"
                         android:background="@drawable/bg_avatar_circle"
                         android:gravity="center"
                         android:textColor="@color/color_primary"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/textDetailStatus"
+                        app:layout_constraintTop_toTopOf="parent"
                         tools:text="M" />
 
                     <TextView
@@ -175,7 +145,7 @@
                         android:layout_marginEnd="@dimen/space_8"
                         android:ellipsize="end"
                         android:maxLines="1"
-                        app:layout_constraintEnd_toStartOf="@id/buttonMessageBarber"
+                        app:layout_constraintEnd_toStartOf="@id/textDetailStatus"
                         app:layout_constraintStart_toEndOf="@id/textDetailBarberInitial"
                         app:layout_constraintTop_toTopOf="@id/textDetailBarberInitial"
                         tools:text="Michael" />
@@ -186,11 +156,11 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/space_12"
-                        android:layout_marginTop="@dimen/space_4"
+                        android:layout_marginTop="@dimen/space_2"
                         android:layout_marginEnd="@dimen/space_8"
-                        app:layout_constraintEnd_toStartOf="@id/buttonMessageBarber"
+                        app:layout_constraintEnd_toStartOf="@id/textDetailPaymentBadge"
                         app:layout_constraintStart_toEndOf="@id/textDetailBarberInitial"
-                        app:layout_constraintTop_toBottomOf="@id/textDetailBarberName"
+                        app:layout_constraintTop_toBottomOf="@id/textDetailStatus"
                         tools:text="9+ years experience" />
 
                     <TextView
@@ -201,21 +171,11 @@
                         android:layout_marginStart="@dimen/space_12"
                         android:layout_marginTop="@dimen/space_4"
                         android:layout_marginEnd="@dimen/space_8"
-                        app:layout_constraintEnd_toStartOf="@id/buttonMessageBarber"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@id/textDetailBarberInitial"
                         app:layout_constraintTop_toBottomOf="@id/textDetailBarberExperience"
-                        tools:text="Specialty: Classic Cut" />
+                        tools:text="Classic haircut specialist" />
 
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/buttonMessageBarber"
-                        style="@style/Widget_ArtBarbershop_SecondaryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="@dimen/button_height_small"
-                        android:minHeight="@dimen/touch_target_min"
-                        android:text="@string/action_message"
-                        android:textSize="@dimen/text_caption"
-                        app:layout_constraintBottom_toBottomOf="@id/textDetailBarberInitial"
-                        app:layout_constraintEnd_toEndOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -252,7 +212,7 @@
                             android:layout_marginStart="@dimen/space_12"
                             android:layout_weight="1"
                             android:textColor="@color/color_text_primary"
-                            tools:text="Haircut, Classic Cut" />
+                            tools:text="Haircut" />
 
                         <TextView
                             android:id="@+id/textDetailPrice"
@@ -481,7 +441,7 @@
             android:layout_weight="1"
             android:background="@drawable/bg_button_danger_outlined"
             android:minHeight="@dimen/touch_target_min"
-            android:text="@string/appointment_cancel"
+            android:text="@string/action_cancel"
             android:textAllCaps="false"
             android:textColor="@color/color_error"
             android:textSize="@dimen/text_button"

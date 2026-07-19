@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.barbershop.adapters.AppointmentAdapter;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -50,7 +49,6 @@ public class AppointmentActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        setupTopBar();
         setupRecyclerView();
         setupStatusChips();
         setupBottomNavigation();
@@ -60,15 +58,6 @@ public class AppointmentActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadAppointments();
-    }
-
-    private void setupTopBar() {
-        findViewById(R.id.buttonAppointmentMenu).setOnClickListener(v ->
-                Toast.makeText(this, R.string.appointment_more_todo, Toast.LENGTH_SHORT).show()
-        );
-        findViewById(R.id.buttonAppointmentNotifications).setOnClickListener(v ->
-                Toast.makeText(this, R.string.appointment_notifications_todo, Toast.LENGTH_SHORT).show()
-        );
     }
 
     private void setupRecyclerView() {
@@ -343,26 +332,14 @@ public class AppointmentActivity extends AppCompatActivity {
     }
 
     private void setupBottomNavigation() {
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        bottomNavigationView.setSelectedItemId(R.id.nav_appointments);
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.nav_appointments) {
-                return true;
-            } else if (itemId == R.id.nav_home) {
-                return launchActivityIfAvailable("HomeActivity");
-            } else if (itemId == R.id.nav_services) {
-                return launchActivityIfAvailable("ServiceListActivity");
-            } else if (itemId == R.id.nav_ai_booking) {
-                return launchActivityIfAvailable("AIChatBookingActivity");
-            } else if (itemId == R.id.nav_profile) {
-                return launchActivityIfAvailable("ProfileActivity");
-            }
-
-            return false;
+        findViewById(R.id.appointmentNavHome).setOnClickListener(v -> launchActivityIfAvailable("HomeActivity"));
+        findViewById(R.id.appointmentNavServices).setOnClickListener(v -> launchActivityIfAvailable("ServiceListActivity"));
+        findViewById(R.id.appointmentNavAi).setOnClickListener(v -> launchActivityIfAvailable("AIChatBookingActivity"));
+        findViewById(R.id.appointmentNavAppointments).setOnClickListener(v -> {
+            RecyclerView recyclerView = findViewById(R.id.recyclerAppointments);
+            recyclerView.smoothScrollToPosition(0);
         });
-        findViewById(R.id.buttonAiBooking).setOnClickListener(v -> launchActivityIfAvailable("AIChatBookingActivity"));
+        findViewById(R.id.appointmentNavProfile).setOnClickListener(v -> launchActivityIfAvailable("ProfileActivity"));
     }
 
     private boolean launchActivityIfAvailable(String simpleClassName) {

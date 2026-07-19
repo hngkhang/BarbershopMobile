@@ -90,7 +90,6 @@ public class PaymentActivity extends AppCompatActivity {
         Intent intent = getIntent();
         appointmentDocumentId = readStringExtra(intent, "appointmentId", "");
         serviceName = readStringExtra(intent, "selectedServiceName", "Haircut");
-        String addonServiceName = readStringExtra(intent, "addonServiceName", "Classic Cut");
         barberName = readStringExtra(intent, "selectedBarberName", "Michael");
         barberExperience = readStringExtra(intent, "barberExperience", "");
         barberSpecialty = readStringExtra(intent, "barberSpecialty", getString(R.string.barber_specialty_not_available));
@@ -109,9 +108,7 @@ public class PaymentActivity extends AppCompatActivity {
 
         ((TextView) findViewById(R.id.textPaymentBarberInitial)).setText(getInitial(barberName));
         ((TextView) findViewById(R.id.textPaymentBarber)).setText(barberName);
-        ((TextView) findViewById(R.id.textPaymentService)).setText(
-                String.format(Locale.US, "%s, %s", serviceName, addonServiceName)
-        );
+        ((TextView) findViewById(R.id.textPaymentService)).setText(serviceName);
         ((TextView) findViewById(R.id.textPaymentDate)).setText(dateLabel);
         ((TextView) findViewById(R.id.textPaymentTime)).setText(
                 String.format(Locale.US, "%s - %d min", startTime, durationMinutes)
@@ -141,9 +138,6 @@ public class PaymentActivity extends AppCompatActivity {
 
     private void setupActions() {
         findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
-        findViewById(R.id.buttonPaymentMore).setOnClickListener(v ->
-                Toast.makeText(this, R.string.payment_security_note, Toast.LENGTH_SHORT).show()
-        );
         findViewById(R.id.buttonCopyTransferContent).setOnClickListener(v -> copyTransferContent());
         findViewById(R.id.buttonIHavePaid).setOnClickListener(v -> makeBankingPayment());
         findViewById(R.id.buttonCheckStatus).setOnClickListener(v -> checkPaymentStatus());

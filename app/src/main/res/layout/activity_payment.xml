@@ -41,30 +41,9 @@
             android:maxLines="1"
             android:text="@string/screen_payment_title"
             app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-            app:layout_constraintEnd_toStartOf="@id/buttonPaymentMore"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/buttonBack"
             app:layout_constraintTop_toTopOf="@id/buttonBack" />
-
-        <ImageButton
-            android:id="@+id/buttonPaymentMore"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:background="@drawable/bg_icon_button"
-            android:contentDescription="@string/action_more_options"
-            android:padding="@dimen/space_12"
-            android:src="@drawable/ic_more_horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            style="@style/TextAppearance_ArtBarbershop_Caption"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/payment_subtitle"
-            app:layout_constraintEnd_toEndOf="@id/textPaymentTitle"
-            app:layout_constraintStart_toStartOf="@id/textPaymentTitle"
-            app:layout_constraintTop_toBottomOf="@id/textPaymentTitle" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
@@ -128,7 +107,7 @@
                             style="@style/TextAppearance_ArtBarbershop_Caption"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            tools:text="Haircut, Classic Cut" />
+                            tools:text="Haircut" />
 
                         <TextView
                             android:id="@+id/textPaymentDate"
@@ -180,13 +159,6 @@
                 android:text="@string/payment_scan_to_pay"
                 android:textColor="@color/color_text_primary"
                 android:textStyle="bold" />
-
-            <TextView
-                style="@style/TextAppearance_ArtBarbershop_Caption"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/payment_scan_instruction" />
 
             <FrameLayout
                 android:id="@+id/paymentQrPlaceholder"

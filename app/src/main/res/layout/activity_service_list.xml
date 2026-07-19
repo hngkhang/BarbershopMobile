@@ -20,37 +20,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/buttonBack"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:background="@drawable/bg_icon_button"
-            android:contentDescription="@string/action_back"
-            android:padding="@dimen/space_12"
-            android:src="@drawable/ic_arrow_back"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <TextView
             android:id="@+id/textServiceTitle"
             style="@style/TextAppearance_ArtBarbershop_ScreenTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/screen_services_title"
-            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/buttonBack" />
-
-        <ImageButton
-            android:id="@+id/buttonNotifications"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:background="@drawable/bg_icon_button"
-            android:contentDescription="@string/action_notifications"
-            android:padding="@dimen/space_12"
-            android:src="@drawable/ic_bell"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <FrameLayout
@@ -235,7 +212,7 @@
         android:layout_marginStart="@dimen/screen_horizontal_padding"
         android:layout_marginTop="@dimen/space_8"
         android:layout_marginEnd="@dimen/screen_horizontal_padding"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/serviceBottomNav"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/serviceFilterScroll">
@@ -283,12 +260,6 @@
                 android:layout_height="wrap_content"
                 android:text="@string/services_empty_title" />
 
-            <TextView
-                style="@style/TextAppearance_ArtBarbershop_Body"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_4"
-                android:text="@string/services_empty_message" />
         </LinearLayout>
 
         <TextView
@@ -300,4 +271,151 @@
             android:text="@string/state_error_placeholder"
             android:visibility="gone" />
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/serviceBottomNav"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/bottom_nav_height"
+        android:background="@color/color_surface"
+        android:elevation="@dimen/card_elevation_pressed"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_8"
+        android:paddingEnd="@dimen/space_8"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/serviceNavHome"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="@string/nav_home"
+                android:src="@drawable/ic_home" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_home" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/serviceNavServices"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="@string/nav_services"
+                android:src="@drawable/ic_grid"
+                app:tint="@color/color_primary" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_services"
+                android:textColor="@color/color_primary" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/serviceNavAi"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:foregroundGravity="center">
+
+            <LinearLayout
+                android:layout_width="@dimen/ai_booking_button_size"
+                android:layout_height="@dimen/ai_booking_button_size"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_ai_booking_circle"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/space_20"
+                    android:layout_height="@dimen/space_20"
+                    android:contentDescription="@string/nav_ai_booking_icon"
+                    android:src="@drawable/ic_sparkle" />
+
+                <TextView
+                    style="@style/TextAppearance_ArtBarbershop_Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:text="@string/nav_ai_short"
+                    android:textColor="@color/color_text_inverse"
+                    android:textSize="@dimen/text_badge" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/serviceNavAppointments"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="@string/nav_appointments"
+                android:src="@drawable/ic_calendar"
+                app:tint="@color/color_text_secondary" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/nav_appointments"
+                android:textSize="@dimen/text_nav_label" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/serviceNavProfile"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/bottom_nav_item_height"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="@dimen/space_24"
+                android:layout_height="@dimen/space_24"
+                android:contentDescription="@string/nav_profile"
+                android:src="@drawable/ic_person" />
+
+            <TextView
+                style="@style/TextAppearance_ArtBarbershop_Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_profile" />
+        </LinearLayout>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
