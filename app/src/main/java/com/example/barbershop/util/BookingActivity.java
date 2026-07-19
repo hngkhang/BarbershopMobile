@@ -86,9 +86,9 @@ public class BookingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking);
 
-        serviceRepository = new ServiceRepository();
-        barberRepository = new BarberRepository();
-        appointmentRepository = new AppointmentRepository();
+        serviceRepository = new ServiceRepository(this);
+        barberRepository = new BarberRepository(this);
+        appointmentRepository = new AppointmentRepository(this);
 
         bindViews();
         setupTopBar();

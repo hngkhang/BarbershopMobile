@@ -68,9 +68,9 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         firestore = FirebaseFirestore.getInstance();
-        serviceRepository = new ServiceRepository();
-        barberRepository = new BarberRepository();
-        appointmentRepository = new AppointmentRepository();
+        serviceRepository = new ServiceRepository(this);
+        barberRepository = new BarberRepository(this);
+        appointmentRepository = new AppointmentRepository(this);
 
         setupFeaturedBarbers();
         setupDashboardActions();

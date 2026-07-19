@@ -53,9 +53,9 @@ public class AIChatBookingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ai_chat_booking);
 
-        serviceRepository = new ServiceRepository();
-        barberRepository = new BarberRepository();
-        appointmentRepository = new AppointmentRepository();
+        serviceRepository = new ServiceRepository(this);
+        barberRepository = new BarberRepository(this);
+        appointmentRepository = new AppointmentRepository(this);
         geminiBookingService = new GeminiBookingService(ContextCompat.getMainExecutor(this));
 
         setupChatList();

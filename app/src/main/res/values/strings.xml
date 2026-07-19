@@ -110,6 +110,7 @@
     <string name="booking_confirm_booking">Confirm Booking</string>
     <string name="booking_slot_unavailable">This time slot is no longer available. Please choose another time.</string>
     <string name="booking_created_success">Your appointment has been booked.</string>
+    <string name="booking_created_offline">Lịch hẹn đã được lưu trên thiết bị và sẽ tự đồng bộ khi có mạng.</string>
     <string name="booking_login_required">Please sign in before confirming a booking.</string>
     <string name="booking_invalid_selection">Booking details are incomplete. Please go back and choose again.</string>
     <string name="booking_select_service_prompt">Choose a service to see duration and availability.</string>
