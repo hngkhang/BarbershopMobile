@@ -46,12 +46,14 @@ public class HomeActivity extends AppCompatActivity {
 
     private static final String COLLECTION_BARBERS = "barbers";
     private static final String COLLECTION_RATINGS = "ratings";
+    private static final String COLLECTION_USERS = "users";
 
     private static final String FIELD_BARBER_ID = "barberId";
     private static final String FIELD_NAME = "name";
     private static final String FIELD_EXPERIENCE = "experience";
     private static final String FIELD_ACTIVE = "active";
     private static final String FIELD_RATE = "rate";
+    private static final String FIELD_USER_NAME = "name";
 
     private FirebaseFirestore firestore;
     private ServiceRepository serviceRepository;
@@ -80,9 +82,53 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        loadHomeGreeting();
         loadHomeServices();
         loadFeaturedBarbers();
         loadUpcomingAppointment();
+    }
+
+    private void loadHomeGreeting() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            bindHomeGreeting("");
+            return;
+        }
+
+        firestore.collection(COLLECTION_USERS)
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(document -> bindHomeGreeting(document.getString(FIELD_USER_NAME)))
+                .addOnFailureListener(exception -> bindHomeGreeting(""));
+    }
+
+    private void bindHomeGreeting(String fullName) {
+        String displayName = getLastName(fullName);
+        if (displayName.isEmpty()) {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            String email = user == null ? "" : user.getEmail();
+            displayName = getLastName(email == null ? "" : email.split("@", 2)[0]);
+        }
+
+        TextView greeting = findViewById(R.id.textHomeGreeting);
+        TextView avatar = findViewById(R.id.textHomeAvatar);
+        if (displayName.isEmpty()) {
+            greeting.setText(R.string.home_greeting_default);
+            avatar.setText(R.string.home_avatar_fallback);
+            return;
+        }
+
+        greeting.setText(getString(R.string.home_greeting, displayName));
+        avatar.setText(displayName.substring(0, 1).toUpperCase(Locale.US));
+    }
+
+    private String getLastName(String fullName) {
+        if (TextUtils.isEmpty(fullName) || fullName.trim().isEmpty()) {
+            return "";
+        }
+
+        String[] nameParts = fullName.trim().split("\\s+");
+        return nameParts[nameParts.length - 1];
     }
 
     private void setupFeaturedBarbers() {
@@ -103,12 +149,7 @@ public class HomeActivity extends AppCompatActivity {
                 Toast.makeText(this, R.string.demo_notifications_message, Toast.LENGTH_SHORT).show()
         );
 
-        findViewById(R.id.searchBar).setOnClickListener(view -> openServices());
-        findViewById(R.id.textViewAllAppointments).setOnClickListener(view -> openAppointments());
         findViewById(R.id.cardUpcomingAppointment).setOnClickListener(view -> openUpcomingAppointment());
-        findViewById(R.id.textViewAllServices).setOnClickListener(view -> openServices());
-        findViewById(R.id.textViewAllBarbers).setOnClickListener(view -> openBarbers());
-
     }
 
     private void setupBottomNavigation() {
@@ -393,12 +434,15 @@ public class HomeActivity extends AppCompatActivity {
 
     private void bindUpcomingAppointment(HomeAppointment appointment) {
         upcomingAppointment = appointment;
+        View section = findViewById(R.id.upcomingAppointmentSection);
         View card = findViewById(R.id.cardUpcomingAppointment);
         if (appointment == null) {
+            section.setVisibility(View.GONE);
             card.setVisibility(View.GONE);
             return;
         }
 
+        section.setVisibility(View.VISIBLE);
         card.setVisibility(View.VISIBLE);
         ((TextView) findViewById(R.id.textHomeUpcomingDate)).setText(
                 formatHomeAppointmentDate(appointment.appointment.getStartAt())

@@ -33,6 +33,7 @@
     <color name="color_warning">#D99000</color>
     <color name="color_warning_bg">#FFF3D7</color>
     <color name="color_error">#D32F2F</color>
+    <color name="color_error_dark">#A62222</color>
     <color name="color_error_bg">#FDECEC</color>
     <color name="color_neutral">#6B7280</color>
     <color name="color_neutral_bg">#F1F3F6</color>

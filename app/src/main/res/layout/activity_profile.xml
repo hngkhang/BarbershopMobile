@@ -20,30 +20,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/buttonBack"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:background="@drawable/bg_icon_button"
-            android:contentDescription="@string/action_back"
-            android:padding="@dimen/space_12"
-            android:src="@drawable/ic_arrow_back"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <TextView
             android:id="@+id/textProfileTitle"
             style="@style/TextAppearance_ArtBarbershop_ScreenTitle"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
             android:text="@string/screen_profile_title"
-            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/buttonBack"
-            app:layout_constraintTop_toTopOf="@id/buttonBack" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <FrameLayout
             android:id="@+id/profileTitleDivider"
@@ -96,7 +84,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/space_16">
+                    android:padding="@dimen/space_20">
 
                     <!-- Avatar và thông tin tài khoản -->
                     <LinearLayout
@@ -108,8 +96,8 @@
                         <TextView
                             android:id="@+id/textProfileAvatar"
                             style="@style/TextAppearance_ArtBarbershop_SectionTitle"
-                            android:layout_width="@dimen/avatar_size_large"
-                            android:layout_height="@dimen/avatar_size_large"
+                            android:layout_width="@dimen/space_64"
+                            android:layout_height="@dimen/space_64"
                             android:background="@drawable/bg_avatar_circle"
                             android:contentDescription="@string/nav_profile"
                             android:gravity="center"
@@ -119,7 +107,7 @@
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/space_16"
+                            android:layout_marginStart="@dimen/space_14"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
@@ -171,6 +159,9 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/space_4"
+                                android:drawableStart="@drawable/ic_phone"
+                                android:drawablePadding="@dimen/space_8"
+                                android:gravity="center_vertical"
                                 tools:text="0912 345 678" />
 
                             <!-- Ô sửa số điện thoại, mặc định ẩn -->
@@ -196,48 +187,44 @@
 
                         </LinearLayout>
 
+                        <ImageButton
+                            android:id="@+id/buttonEditProfile"
+                            android:layout_width="@dimen/touch_target_min"
+                            android:layout_height="@dimen/touch_target_min"
+                            android:layout_marginStart="@dimen/space_8"
+                            android:background="@drawable/bg_icon_button"
+                            android:contentDescription="@string/profile_edit"
+                            android:padding="@dimen/space_12"
+                            android:src="@drawable/ic_edit"
+                            app:tint="@color/color_primary" />
                     </LinearLayout>
 
                     <!-- Nút Edit ở chế độ xem -->
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/buttonEditProfile"
-                        style="@style/Widget_ArtBarbershop_SecondaryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="@dimen/button_height_small"
-                        android:layout_gravity="end"
-                        android:layout_marginTop="@dimen/space_12"
-                        android:minHeight="@dimen/touch_target_min"
-                        android:text="@string/profile_edit"
-                        android:textSize="@dimen/text_caption" />
-
                     <!-- Nút Cancel và Save ở chế độ chỉnh sửa -->
                     <LinearLayout
                         android:id="@+id/layoutProfileEditActions"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_12"
-                        android:gravity="end"
+                        android:layout_marginTop="@dimen/space_20"
                         android:orientation="horizontal"
                         android:visibility="gone">
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/buttonCancelProfileEdit"
                             style="@style/Widget_ArtBarbershop_SecondaryButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/button_height_small"
-                            android:minHeight="@dimen/touch_target_min"
-                            android:text="@string/profile_cancel"
-                            android:textSize="@dimen/text_caption" />
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/button_height"
+                            android:layout_weight="1"
+                            android:text="@string/profile_cancel" />
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/buttonSaveProfile"
                             style="@style/Widget_ArtBarbershop_PrimaryButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/button_height_small"
-                            android:layout_marginStart="@dimen/space_8"
-                            android:minHeight="@dimen/touch_target_min"
-                            android:text="@string/profile_save"
-                            android:textSize="@dimen/text_caption" />
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/button_height"
+                            android:layout_marginStart="@dimen/space_12"
+                            android:layout_weight="1"
+                            android:text="@string/profile_save" />
 
                     </LinearLayout>
 
@@ -256,7 +243,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
-                    tools:itemCount="7"
+                    tools:itemCount="2"
                     tools:listitem="@layout/item_profile_menu" />
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

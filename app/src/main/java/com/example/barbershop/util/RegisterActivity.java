@@ -50,8 +50,6 @@ public class RegisterActivity extends AppCompatActivity {
         checkTerms = findViewById(R.id.checkTerms);
         buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
 
-        findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
-
         findViewById(R.id.linkLogin).setOnClickListener(v ->
                 startActivity(new Intent(RegisterActivity.this, LoginActivity.class)));
 

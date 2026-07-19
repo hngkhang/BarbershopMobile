@@ -70,6 +70,18 @@
         <item name="android:textAllCaps">false</item>
     </style>
 
+    <style name="Widget_ArtBarbershop_DangerButton">
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">@dimen/space_20</item>
+        <item name="android:paddingEnd">@dimen/space_20</item>
+        <item name="android:background">@drawable/bg_button_danger_filled</item>
+        <item name="android:textColor">@color/color_text_inverse</item>
+        <item name="android:textSize">@dimen/text_button</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
     <style name="Widget_ArtBarbershop_Card">
         <item name="cardBackgroundColor">@color/color_surface</item>
         <item name="cardCornerRadius">@dimen/radius_medium</item>

@@ -46,10 +46,10 @@ public class ServiceListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_service_list);
         serviceRepository = new ServiceRepository(this);
 
-        setupTopBar();
         setupRecyclerView();
         setupSearch();
         setupFilterChips();
+        setupBottomNavigation();
     }
 
     @Override
@@ -58,11 +58,21 @@ public class ServiceListActivity extends AppCompatActivity {
         loadServices();
     }
 
-    private void setupTopBar() {
-        findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
-        findViewById(R.id.buttonNotifications).setOnClickListener(v ->
-                Toast.makeText(this, getString(R.string.nav_target_unavailable, "Notifications"), Toast.LENGTH_SHORT).show()
-        );
+    private void setupBottomNavigation() {
+        findViewById(R.id.serviceNavHome).setOnClickListener(v -> navigateTo(HomeActivity.class));
+        findViewById(R.id.serviceNavServices).setOnClickListener(v -> {
+            RecyclerView recyclerView = findViewById(R.id.recyclerServices);
+            recyclerView.smoothScrollToPosition(0);
+        });
+        findViewById(R.id.serviceNavAi).setOnClickListener(v -> navigateTo(AIChatBookingActivity.class));
+        findViewById(R.id.serviceNavAppointments).setOnClickListener(v -> navigateTo(AppointmentActivity.class));
+        findViewById(R.id.serviceNavProfile).setOnClickListener(v -> navigateTo(ProfileActivity.class));
+    }
+
+    private void navigateTo(Class<?> destination) {
+        Intent intent = new Intent(this, destination);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
     }
 
     private void setupRecyclerView() {

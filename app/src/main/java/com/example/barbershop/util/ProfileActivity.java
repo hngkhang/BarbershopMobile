@@ -4,6 +4,8 @@ import com.example.barbershop.R;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -11,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,8 +21,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.barbershop.adapters.ProfileMenuAdapter;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
@@ -35,9 +41,8 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firestore;
     private FirebaseUser currentUser;
-    private static final String ACTION_APPOINTMENTS = "appointments";
+    private static final String ACTION_CHANGE_PASSWORD = "change_password";
     private static final String ACTION_LOGOUT = "logout";
-    private static final String ACTION_PLACEHOLDER = "placeholder";
     private TextView textAvatar;
     private TextView textName;
     private TextView textEmail;
@@ -46,7 +51,7 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputLayout layoutEditName;
     private TextInputEditText inputEditPhone;
     private TextInputEditText inputEditName;
-    private AppCompatButton buttonEditProfile;
+    private View buttonEditProfile;
     private AppCompatButton buttonCancelEdit;
     private AppCompatButton buttonSaveProfile;
     private View layoutEditActions;
@@ -254,6 +259,7 @@ public class ProfileActivity extends AppCompatActivity {
         textPhone.setVisibility(View.VISIBLE);
         layoutEditActions.setVisibility(View.GONE);
         buttonEditProfile.setVisibility(View.VISIBLE);
+        textAvatar.setVisibility(View.VISIBLE);
 
         displayCurrentProfile();
     }
@@ -269,6 +275,7 @@ public class ProfileActivity extends AppCompatActivity {
         layoutEditName.setVisibility(View.VISIBLE);
         layoutEditPhone.setVisibility(View.VISIBLE);
         buttonEditProfile.setVisibility(View.GONE);
+        textAvatar.setVisibility(View.GONE);
         layoutEditActions.setVisibility(View.VISIBLE);
 
         inputEditName.requestFocus();
@@ -283,43 +290,185 @@ public class ProfileActivity extends AppCompatActivity {
         recyclerView.setNestedScrollingEnabled(false);
 
         adapter.submitList(Arrays.asList(
-                new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_my_appointments), R.drawable.ic_calendar, ACTION_APPOINTMENTS, false),
-                new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_payment_history), R.drawable.ic_payment, ACTION_PLACEHOLDER, false),
-                new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_notification_settings), R.drawable.ic_bell, ACTION_PLACEHOLDER, false),
-                new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_ai_booking_history), R.drawable.ic_robot, ACTION_PLACEHOLDER, false),
-                new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_about), R.drawable.ic_info, ACTION_PLACEHOLDER, false),
-                new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_privacy), R.drawable.ic_shield, ACTION_PLACEHOLDER, false),
+                new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_change_password), R.drawable.ic_lock, ACTION_CHANGE_PASSWORD, false),
                 new ProfileMenuAdapter.ProfileMenuItem(getString(R.string.profile_logout), R.drawable.ic_logout, ACTION_LOGOUT, true)
         ));
-        // TODO: Replace temporary profile menu actions with real profile/payment/notification destinations as they are implemented.
     }
 
     private void setupActions() {
-        findViewById(R.id.buttonBack).setOnClickListener(v->{
-            if (edittingProfile) enterEditMode();
-            else finish();
-        });
         buttonEditProfile.setOnClickListener(v->enterEditMode());
         buttonCancelEdit.setOnClickListener(v->exitEditMode());
         buttonSaveProfile.setOnClickListener(V->saveProfile());
     }
 
     private void handleProfileMenuClick(ProfileMenuAdapter.ProfileMenuItem item) {
-        if (ACTION_APPOINTMENTS.equals(item.action)) {
-            launchActivityIfAvailable("AppointmentActivity");
+        if (ACTION_CHANGE_PASSWORD.equals(item.action)) {
+            showChangePasswordDialog();
         } else if (ACTION_LOGOUT.equals(item.action)) {
-            firebaseAuth.signOut();
-
-            Toast.makeText(
-                    this,
-                    "Signed out.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            openLoginAndClearTask();
-        } else {
-            Toast.makeText(this, getString(R.string.profile_menu_todo, item.title), Toast.LENGTH_SHORT).show();
+            showLogoutConfirmation();
         }
+    }
+
+    private void showChangePasswordDialog() {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        String email = user == null ? null : user.getEmail();
+        if (user == null || TextUtils.isEmpty(email)) {
+            Toast.makeText(this, R.string.profile_password_change_unavailable, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_change_password, null);
+        TextInputLayout layoutCurrentPassword = dialogView.findViewById(R.id.layoutCurrentPassword);
+        TextInputLayout layoutNewPassword = dialogView.findViewById(R.id.layoutNewPassword);
+        TextInputLayout layoutConfirmPassword = dialogView.findViewById(R.id.layoutConfirmPassword);
+        TextInputEditText inputCurrentPassword = dialogView.findViewById(R.id.inputCurrentPassword);
+        TextInputEditText inputNewPassword = dialogView.findViewById(R.id.inputNewPassword);
+        TextInputEditText inputConfirmPassword = dialogView.findViewById(R.id.inputConfirmPassword);
+        AppCompatButton buttonCancel = dialogView.findViewById(R.id.buttonCancelChangePassword);
+        AppCompatButton buttonApply = dialogView.findViewById(R.id.buttonApplyChangePassword);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(dialogView)
+                .create();
+
+        dialog.setOnShowListener(ignored -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+            buttonCancel.setOnClickListener(view -> dialog.dismiss());
+            buttonApply.setOnClickListener(view -> changePassword(
+                        dialog,
+                        user,
+                        layoutCurrentPassword,
+                        layoutNewPassword,
+                        layoutConfirmPassword,
+                        inputCurrentPassword,
+                        inputNewPassword,
+                        inputConfirmPassword,
+                        buttonApply,
+                        buttonCancel
+                ));
+        });
+        dialog.show();
+    }
+
+    private void changePassword(
+            AlertDialog dialog,
+            FirebaseUser user,
+            TextInputLayout layoutCurrentPassword,
+            TextInputLayout layoutNewPassword,
+            TextInputLayout layoutConfirmPassword,
+            TextInputEditText inputCurrentPassword,
+            TextInputEditText inputNewPassword,
+            TextInputEditText inputConfirmPassword,
+            AppCompatButton buttonApply,
+            AppCompatButton buttonCancel
+    ) {
+        String currentPassword = getValue(inputCurrentPassword);
+        String newPassword = getValue(inputNewPassword);
+        String confirmedPassword = getValue(inputConfirmPassword);
+
+        layoutCurrentPassword.setError(null);
+        layoutNewPassword.setError(null);
+        layoutConfirmPassword.setError(null);
+
+        if (TextUtils.isEmpty(currentPassword)) {
+            layoutCurrentPassword.setError(getString(R.string.profile_current_password_required));
+            inputCurrentPassword.requestFocus();
+            return;
+        }
+        if (newPassword.length() < 6) {
+            layoutNewPassword.setError(getString(R.string.profile_new_password_invalid));
+            inputNewPassword.requestFocus();
+            return;
+        }
+        if (!newPassword.equals(confirmedPassword)) {
+            layoutConfirmPassword.setError(getString(R.string.profile_password_confirmation_mismatch));
+            inputConfirmPassword.requestFocus();
+            return;
+        }
+
+        setPasswordDialogLoading(
+                inputCurrentPassword,
+                inputNewPassword,
+                inputConfirmPassword,
+                buttonApply,
+                buttonCancel,
+                true
+        );
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+        user.reauthenticate(credential)
+                .addOnSuccessListener(unused -> user.updatePassword(newPassword)
+                        .addOnSuccessListener(ignored -> {
+                            dialog.dismiss();
+                            Toast.makeText(this, R.string.profile_password_change_success, Toast.LENGTH_SHORT).show();
+                        })
+                        .addOnFailureListener(exception -> {
+                            setPasswordDialogLoading(
+                                    inputCurrentPassword,
+                                    inputNewPassword,
+                                    inputConfirmPassword,
+                                    buttonApply,
+                                    buttonCancel,
+                                    false
+                            );
+                            Toast.makeText(this, R.string.profile_password_change_failed, Toast.LENGTH_LONG).show();
+                        }))
+                .addOnFailureListener(exception -> {
+                    setPasswordDialogLoading(
+                            inputCurrentPassword,
+                            inputNewPassword,
+                            inputConfirmPassword,
+                            buttonApply,
+                            buttonCancel,
+                            false
+                    );
+                    layoutCurrentPassword.setError(getString(R.string.profile_current_password_invalid));
+                    inputCurrentPassword.requestFocus();
+                });
+    }
+
+    private void setPasswordDialogLoading(
+            TextInputEditText inputCurrentPassword,
+            TextInputEditText inputNewPassword,
+            TextInputEditText inputConfirmPassword,
+            AppCompatButton buttonApply,
+            AppCompatButton buttonCancel,
+            boolean loading
+    ) {
+        inputCurrentPassword.setEnabled(!loading);
+        inputNewPassword.setEnabled(!loading);
+        inputConfirmPassword.setEnabled(!loading);
+        buttonApply.setEnabled(!loading);
+        buttonCancel.setEnabled(!loading);
+    }
+
+    private void showLogoutConfirmation() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_logout_confirmation, null);
+        AppCompatButton buttonCancel = dialogView.findViewById(R.id.buttonCancelLogout);
+        AppCompatButton buttonLogout = dialogView.findViewById(R.id.buttonConfirmLogout);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(dialogView)
+                .create();
+
+        dialog.setOnShowListener(ignored -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+            buttonCancel.setOnClickListener(view -> dialog.dismiss());
+            buttonLogout.setOnClickListener(view -> {
+                dialog.dismiss();
+                performLogout();
+            });
+        });
+        dialog.show();
+    }
+
+    private void performLogout() {
+        firebaseAuth.signOut();
+        Toast.makeText(this, R.string.profile_logout_success, Toast.LENGTH_SHORT).show();
+        openLoginAndClearTask();
     }
 
     private void openLoginAndClearTask() {
@@ -371,8 +520,12 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private String getInitial(String value) {
-        return value == null || value.trim().isEmpty()
-                ? "A"
-                : value.trim().substring(0, 1).toUpperCase(Locale.US);
+        if (value == null || value.trim().isEmpty()) {
+            return "A";
+        }
+
+        String[] nameParts = value.trim().split("\\s+");
+        String lastName = nameParts[nameParts.length - 1];
+        return lastName.substring(0, 1).toUpperCase(Locale.US);
     }
 }

@@ -78,14 +78,21 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             paymentBadge.setTextColor(ContextCompat.getColor(this, paymentBadgeColor(paymentStatus)));
         }
 
-        ((TextView) findViewById(R.id.textAppointmentId)).setText(appointmentId);
         ((TextView) findViewById(R.id.textDetailBarberInitial)).setText(getInitial(barberName));
         findViewById(R.id.textDetailBarberInitial).setContentDescription(
                 getString(R.string.barber_avatar_content_description, barberName)
         );
         ((TextView) findViewById(R.id.textDetailBarberName)).setText(barberName);
-        ((TextView) findViewById(R.id.textDetailBarberExperience)).setText(barberExperience);
-        ((TextView) findViewById(R.id.textDetailBarberSpecialty)).setText(barberSpecialty);
+        ((TextView) findViewById(R.id.textDetailBarberExperience)).setText(
+                formatBarberExperience(barberExperience)
+        );
+        TextView specialtyView = findViewById(R.id.textDetailBarberSpecialty);
+        boolean hasSpecialty = !barberSpecialty.isEmpty()
+                && !barberSpecialty.equalsIgnoreCase(getString(R.string.barber_specialty_not_available));
+        specialtyView.setVisibility(hasSpecialty ? View.VISIBLE : View.GONE);
+        if (hasSpecialty) {
+            specialtyView.setText(barberSpecialty);
+        }
         ((TextView) findViewById(R.id.textDetailService)).setText(serviceName);
         ((TextView) findViewById(R.id.textDetailPrice)).setText(price);
         ((TextView) findViewById(R.id.textDetailDate)).setText(detailText(getString(R.string.appointment_date_label), appointmentDate));
@@ -114,14 +121,6 @@ public class AppointmentDetailActivity extends AppCompatActivity {
 
     private void setupActions() {
         findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
-        findViewById(R.id.buttonDetailMore).setOnClickListener(v ->
-                Toast.makeText(this, R.string.appointment_more_todo, Toast.LENGTH_SHORT).show()
-        );
-        findViewById(R.id.buttonMessageBarber).setOnClickListener(v -> {
-            Intent intent = new Intent(this, AIChatBookingActivity.class);
-            intent.putExtra("selectedBarberName", barberName);
-            startActivity(intent);
-        });
         findViewById(R.id.buttonViewPayment).setOnClickListener(v -> openPayment());
         findViewById(R.id.buttonCancelAppointment).setOnClickListener(v -> {
             // Cancellation will be connected to the Firestore booking flow separately.
@@ -154,6 +153,18 @@ public class AppointmentDetailActivity extends AppCompatActivity {
 
     private String detailText(String label, String value) {
         return label + "\n" + value;
+    }
+
+    private String formatBarberExperience(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return getString(R.string.barber_experience_not_updated);
+        }
+
+        String trimmedValue = value.trim();
+        if (trimmedValue.matches("\\d+\\+?")) {
+            return getString(R.string.barber_experience_format, trimmedValue);
+        }
+        return trimmedValue;
     }
 
     private boolean isPaidPayment() {
