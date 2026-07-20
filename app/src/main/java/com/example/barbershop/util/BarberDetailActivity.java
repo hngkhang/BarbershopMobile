@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -76,9 +75,6 @@ public class BarberDetailActivity extends AppCompatActivity {
 
     private void setupTopBar() {
         findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
-        findViewById(R.id.buttonNotifications).setOnClickListener(v ->
-                Toast.makeText(this, R.string.demo_notifications_message, Toast.LENGTH_SHORT).show()
-        );
     }
 
     private void setupLists() {
@@ -233,7 +229,20 @@ public class BarberDetailActivity extends AppCompatActivity {
     }
 
     private void bindFeedbackDetails() {
-        for (Feedback feedback : currentFeedbacks) {
+        List<Feedback> displayedFeedbacks = new ArrayList<>(currentFeedbacks);
+        for (Rating rating : currentRatings) {
+            if (!hasFeedbackFromUser(displayedFeedbacks, rating.getUserId())) {
+                displayedFeedbacks.add(new Feedback(
+                        "rating_" + rating.getId(),
+                        rating.getFeedbackId(),
+                        rating.getBarberId(),
+                        rating.getUserId(),
+                        getString(R.string.review_no_written_feedback)
+                ));
+            }
+        }
+
+        for (Feedback feedback : displayedFeedbacks) {
             feedback.setCustomerName("");
             for (UserProfile user : currentUsers) {
                 if (user.matchesUserId(feedback.getUserId())) {
@@ -252,8 +261,17 @@ public class BarberDetailActivity extends AppCompatActivity {
             }
         }
 
-        feedbackAdapter.submitList(currentFeedbacks);
-        emptyFeedbackState.setVisibility(currentFeedbacks.isEmpty() ? View.VISIBLE : View.GONE);
+        feedbackAdapter.submitList(displayedFeedbacks);
+        emptyFeedbackState.setVisibility(displayedFeedbacks.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean hasFeedbackFromUser(List<Feedback> feedbacks, String userId) {
+        for (Feedback feedback : feedbacks) {
+            if (feedback.getUserId().equals(userId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void showLoading() {

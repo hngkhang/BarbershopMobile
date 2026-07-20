@@ -292,6 +292,7 @@ public class HomeActivity extends AppCompatActivity {
                         double averageRating = ratingCount == 0 ? 0.0 : ratingSum / ratingCount;
 
                         barbers.add(new FeaturedBarber(
+                                document.getId(),
                                 barberId,
                                 name,
                                 experience,
@@ -336,8 +337,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void openBarberProfile(FeaturedBarber barber) {
-        Intent intent = new Intent(this, ReviewActivity.class);
-        intent.putExtra("barberId", barber.barberId);
+        Intent intent = new Intent(this, BarberDetailActivity.class);
+        intent.putExtra(BarberListActivity.EXTRA_BARBER_ID, barber.documentId);
         startActivity(intent);
     }
 
@@ -635,6 +636,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private static class FeaturedBarber {
+        final String documentId;
         final long barberId;
         final String name;
         final String experience;
@@ -642,12 +644,14 @@ public class HomeActivity extends AppCompatActivity {
         final long ratingCount;
 
         FeaturedBarber(
+                String documentId,
                 long barberId,
                 String name,
                 String experience,
                 double averageRating,
                 long ratingCount
         ) {
+            this.documentId = documentId;
             this.barberId = barberId;
             this.name = name;
             this.experience = experience;

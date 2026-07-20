@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.barbershop.adapters.AppointmentAdapter;
+import com.example.barbershop.data.AppointmentRepository;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,9 +26,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class AppointmentActivity extends AppCompatActivity {
 
@@ -38,6 +41,7 @@ public class AppointmentActivity extends AppCompatActivity {
     private View errorState;
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firestore;
+    private AppointmentRepository appointmentRepository;
     private final List<AppointmentAdapter.AppointmentItem> allAppointments = new ArrayList<>();
     private final List<TextView> statusChips = new ArrayList<>();
 
@@ -48,6 +52,7 @@ public class AppointmentActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
+        appointmentRepository = new AppointmentRepository(this);
 
         setupRecyclerView();
         setupStatusChips();
@@ -66,7 +71,17 @@ public class AppointmentActivity extends AppCompatActivity {
         loadingState = findViewById(R.id.layoutAppointmentsLoading);
         errorState = findViewById(R.id.layoutAppointmentsError);
 
-        appointmentAdapter = new AppointmentAdapter(this::openAppointmentDetail);
+        appointmentAdapter = new AppointmentAdapter(new AppointmentAdapter.OnAppointmentClickListener() {
+            @Override
+            public void onViewDetailsClick(AppointmentAdapter.AppointmentItem appointmentItem) {
+                openAppointmentDetail(appointmentItem);
+            }
+
+            @Override
+            public void onReviewClick(AppointmentAdapter.AppointmentItem appointmentItem) {
+                openReview(appointmentItem);
+            }
+        });
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(appointmentAdapter);
         errorState.setOnClickListener(v -> loadAppointments());
@@ -113,8 +128,16 @@ public class AppointmentActivity extends AppCompatActivity {
         }
 
         showLoading(true);
+        appointmentRepository.completeExpiredAppointmentsForUser(currentUser.getUid(),
+                new AppointmentRepository.RepositoryCallback<Void>() {
+                    @Override public void onSuccess(Void ignored) { loadAppointmentsFromFirestore(currentUser.getUid()); }
+                    @Override public void onError(Exception exception) { loadAppointmentsFromFirestore(currentUser.getUid()); }
+                });
+    }
+
+    private void loadAppointmentsFromFirestore(String userUid) {
         firestore.collection("appointments")
-                .whereEqualTo("userUid", currentUser.getUid())
+                .whereEqualTo("userUid", userUid)
                 .get()
                 .addOnSuccessListener(snapshot -> loadLookupData(snapshot.getDocuments()))
                 .addOnFailureListener(this::showError);
@@ -129,6 +152,7 @@ public class AppointmentActivity extends AppCompatActivity {
                         String barberId = normalizedId(document.get("barberId"));
                         if (!barberId.isEmpty()) {
                             barbersById.put(barberId, new BarberInfo(
+                                    barberId,
                                     readString(document, "name"),
                                     readString(document, "experience")
                             ));
@@ -156,7 +180,7 @@ public class AppointmentActivity extends AppCompatActivity {
                             ));
                         }
                     }
-                    bindAppointments(appointmentDocuments, barbersById, servicesById);
+                    loadReviewState(appointmentDocuments, barbersById, servicesById);
                 })
                 .addOnFailureListener(this::showError);
     }
@@ -164,7 +188,9 @@ public class AppointmentActivity extends AppCompatActivity {
     private void bindAppointments(
             List<DocumentSnapshot> appointmentDocuments,
             Map<String, BarberInfo> barbersById,
-            Map<String, ServiceInfo> servicesById
+            Map<String, ServiceInfo> servicesById,
+            Set<String> reviewedAppointmentIds,
+            Set<String> legacyReviewedBarberIds
     ) {
         List<AppointmentAdapter.AppointmentItem> loadedAppointments = new ArrayList<>();
         List<DocumentSnapshot> sortedDocuments = new ArrayList<>(appointmentDocuments);
@@ -189,6 +215,10 @@ public class AppointmentActivity extends AppCompatActivity {
 
             BarberInfo barber = barbersById.get(normalizedId(document.get("barberId")));
             ServiceInfo service = servicesById.get(normalizedId(document.get("serviceId")));
+            String rawStatus = readString(document, "status");
+            boolean completed = "COMPLETED".equalsIgnoreCase(rawStatus);
+            boolean reviewed = reviewedAppointmentIds.contains(document.getId())
+                    || (completed && legacyReviewedBarberIds.contains(normalizedId(document.get("barberId"))));
             loadedAppointments.add(new AppointmentAdapter.AppointmentItem(
                     document.getId(),
                     formatTimestamp(startAt, "EEE"),
@@ -197,22 +227,58 @@ public class AppointmentActivity extends AppCompatActivity {
                     formatTimestamp(startAt, "h:mm a"),
                     formatTimestamp(endAt, "h:mm a"),
                     durationLabel(startAt, endAt),
+                    barber == null ? "" : barber.id,
                     barber == null ? "" : barber.name,
                     barber == null ? getString(R.string.barber_experience_not_updated) : barber.experience,
                     getString(R.string.barber_specialty_not_available),
                     service == null ? "" : service.name,
                     service == null ? "" : formatPrice(service.price),
-                    displayStatus(readString(document, "status")),
+                    displayStatus(rawStatus),
                     displayPaymentStatus(readString(document, "paymentStatus")),
                     numberValue(document.get("paymentId")) > 0L ? "banking" : "",
                     readString(document, "note"),
-                    formatTimestamp(document.getTimestamp("createdAt"), "MMM d, yyyy - h:mm a")
+                    formatTimestamp(document.getTimestamp("createdAt"), "MMM d, yyyy - h:mm a"),
+                    reviewed
             ));
         }
 
         allAppointments.clear();
         allAppointments.addAll(loadedAppointments);
         applyStatusFilter();
+    }
+
+    private void loadReviewState(
+            List<DocumentSnapshot> appointmentDocuments,
+            Map<String, BarberInfo> barbersById,
+            Map<String, ServiceInfo> servicesById
+    ) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            bindAppointments(appointmentDocuments, barbersById, servicesById,
+                    new HashSet<>(), new HashSet<>());
+            return;
+        }
+        firestore.collection("ratings")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    Set<String> reviewedAppointmentIds = new HashSet<>();
+                    Set<String> legacyReviewedBarberIds = new HashSet<>();
+                    for (DocumentSnapshot document : snapshot.getDocuments()) {
+                        if (!currentUser.getUid().equals(readString(document, "userId"))) {
+                            continue;
+                        }
+                        String reviewedAppointmentId = readString(document, "appointmentId");
+                        if (!reviewedAppointmentId.isEmpty()) {
+                            reviewedAppointmentIds.add(reviewedAppointmentId);
+                        } else {
+                            legacyReviewedBarberIds.add(normalizedId(document.get("barberId")));
+                        }
+                    }
+                    bindAppointments(appointmentDocuments, barbersById, servicesById,
+                            reviewedAppointmentIds, legacyReviewedBarberIds);
+                })
+                .addOnFailureListener(exception -> bindAppointments(appointmentDocuments,
+                        barbersById, servicesById, new HashSet<>(), new HashSet<>()));
     }
 
     private void applyStatusFilter() {
@@ -316,6 +382,7 @@ public class AppointmentActivity extends AppCompatActivity {
         intent.putExtra("appointmentId", appointmentItem.id);
         intent.putExtra("appointmentStatus", appointmentItem.status);
         intent.putExtra("barberName", appointmentItem.barberName);
+        intent.putExtra("barberId", appointmentItem.barberId);
         intent.putExtra("barberExperience", appointmentItem.barberExperience);
         intent.putExtra("barberSpecialty", appointmentItem.barberSpecialty);
         intent.putExtra("serviceName", appointmentItem.serviceName);
@@ -329,6 +396,18 @@ public class AppointmentActivity extends AppCompatActivity {
         intent.putExtra("appointmentNote", appointmentItem.note);
         intent.putExtra("appointmentCreatedAt", appointmentItem.createdAt);
         startActivity(intent);
+    }
+
+    private void openReview(AppointmentAdapter.AppointmentItem appointmentItem) {
+        try {
+            long barberId = Long.parseLong(appointmentItem.barberId);
+            Intent intent = new Intent(this, ReviewActivity.class);
+            intent.putExtra("barberId", barberId);
+            intent.putExtra("appointmentId", appointmentItem.id);
+            startActivity(intent);
+        } catch (NumberFormatException exception) {
+            Toast.makeText(this, R.string.barber_invalid_data, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupBottomNavigation() {
@@ -358,10 +437,12 @@ public class AppointmentActivity extends AppCompatActivity {
     }
 
     private static class BarberInfo {
+        final String id;
         final String name;
         final String experience;
 
-        BarberInfo(String name, String experience) {
+        BarberInfo(String id, String name, String experience) {
+            this.id = id;
             this.name = name;
             this.experience = experience;
         }

@@ -227,6 +227,10 @@
     <string name="appointment_view_payment">View Payment</string>
     <string name="appointment_cancel">Cancel Appointment</string>
     <string name="appointment_cancel_todo">Appointment cancellation will connect to booking logic later.</string>
+    <string name="appointment_cancel_confirm_title">Cancel appointment?</string>
+    <string name="appointment_cancel_confirm_message">This appointment will be cancelled and cannot be restored.</string>
+    <string name="appointment_cancel_success">Your appointment has been cancelled.</string>
+    <string name="appointment_cancel_failed">Unable to cancel appointment: %1$s</string>
     <string name="appointment_message_todo">Messaging will connect to barber contact logic later.</string>
     <string name="appointment_notifications_todo">Notifications screen will be connected later.</string>
     <string name="appointment_more_todo">Appointment menu will be connected later.</string>
@@ -295,6 +299,8 @@
     <string name="action_message">Message</string>
     <string name="action_logout">Logout</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_review_barber">Review</string>
+    <string name="action_reviewed">Reviewed</string>
     <string name="profile_name_hint">Full Name</string>
     <string name="profile_phone_hint">Phone Number</string>
     <string name="profile_cancel">Cancel</string>
@@ -324,6 +330,8 @@
     <string name="review_login_required">Please sign in before submitting a review.</string>
     <string name="review_submitting">Submitting...</string>
     <string name="review_submit_success">Your rating and feedback were submitted.</string>
+    <string name="review_already_submitted">You have already reviewed this appointment.</string>
+    <string name="review_no_written_feedback">No written feedback was provided.</string>
     <string name="review_submit_failed">Cannot submit review: %1$s</string>
     <string name="notifications_unavailable">Notifications are not available yet.</string>
     <string name="barber_name_unknown">Unnamed barber</string>

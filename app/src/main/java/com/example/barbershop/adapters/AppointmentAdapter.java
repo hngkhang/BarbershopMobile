@@ -19,6 +19,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
     public interface OnAppointmentClickListener {
         void onViewDetailsClick(AppointmentItem appointmentItem);
+        void onReviewClick(AppointmentItem appointmentItem);
     }
 
     private final List<AppointmentItem> appointments = new ArrayList<>();
@@ -62,6 +63,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         private final TextView textStatus;
         private final TextView textPaymentStatus;
         private final AppCompatButton buttonDetails;
+        private final AppCompatButton buttonReview;
 
         AppointmentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,6 +77,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             textStatus = itemView.findViewById(R.id.textAppointmentStatus);
             textPaymentStatus = itemView.findViewById(R.id.textAppointmentPaymentStatus);
             buttonDetails = itemView.findViewById(R.id.buttonAppointmentDetails);
+            buttonReview = itemView.findViewById(R.id.buttonAppointmentReview);
         }
 
         void bind(AppointmentItem appointmentItem, OnAppointmentClickListener listener) {
@@ -103,6 +106,14 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 ));
             }
             buttonDetails.setOnClickListener(v -> listener.onViewDetailsClick(appointmentItem));
+            boolean canReview = AppointmentItem.STATUS_COMPLETED.equals(appointmentItem.status)
+                    && appointmentItem.barberId != null && !appointmentItem.barberId.trim().isEmpty();
+            buttonReview.setVisibility(canReview ? View.VISIBLE : View.GONE);
+            buttonReview.setEnabled(!appointmentItem.reviewed);
+            buttonReview.setAlpha(appointmentItem.reviewed ? 0.55f : 1.0f);
+            buttonReview.setText(appointmentItem.reviewed
+                    ? R.string.action_reviewed : R.string.action_review_barber);
+            buttonReview.setOnClickListener(v -> listener.onReviewClick(appointmentItem));
         }
 
         private int statusBackground(String status) {
@@ -150,6 +161,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         public final String time;
         public final String endTime;
         public final String duration;
+        public final String barberId;
         public final String barberName;
         public final String barberInitial;
         public final String barberExperience;
@@ -161,6 +173,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         public final String paymentMethod;
         public final String note;
         public final String createdAt;
+        public final boolean reviewed;
 
         public AppointmentItem(
                 String id,
@@ -170,6 +183,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 String time,
                 String endTime,
                 String duration,
+                String barberId,
                 String barberName,
                 String barberExperience,
                 String barberSpecialty,
@@ -179,7 +193,8 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 String paymentStatus,
                 String paymentMethod,
                 String note,
-                String createdAt
+                String createdAt,
+                boolean reviewed
         ) {
             this.id = id;
             this.day = day;
@@ -188,6 +203,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             this.time = time;
             this.endTime = endTime;
             this.duration = duration;
+            this.barberId = barberId;
             this.barberName = barberName;
             this.barberInitial = barberName == null || barberName.trim().isEmpty()
                     ? "A"
@@ -201,6 +217,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             this.paymentMethod = paymentMethod;
             this.note = note;
             this.createdAt = createdAt;
+            this.reviewed = reviewed;
         }
     }
 }
