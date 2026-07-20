@@ -106,6 +106,20 @@ public final class OfflineDataStore {
         });
     }
 
+    public static void readAppointmentsForUser(Context context, String userUid,
+                                               Callback<List<Appointment>> callback) {
+        execute(context, callback, database -> {
+            List<Appointment> result = new ArrayList<>();
+            try (Cursor cursor = database.query("appointments", null, "user_uid = ?",
+                    new String[]{userUid}, null, null, "start_at_ms DESC")) {
+                while (cursor.moveToNext()) {
+                    result.add(appointmentFromCursor(cursor));
+                }
+            }
+            return result;
+        });
+    }
+
     public static void cacheServices(Context context, List<ShopService> services) {
         executeWrite(context, database -> {
             long now = System.currentTimeMillis();
@@ -183,7 +197,7 @@ public final class OfflineDataStore {
                     values.put("end_at_ms", appointment.getEndAt().toDate().getTime()); values.put("note", appointment.getNote());
                     values.put("status", appointment.getStatus()); values.put("payment_status", "UNPAID");
                     values.put("created_at_ms", now); values.put("sync_status", "SYNCED"); values.put("last_sync_at_ms", now);
-                    database.insertWithOnConflict("appointments", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                    database.insertWithOnConflict("appointments", null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 }
                 database.setTransactionSuccessful();
             } finally { database.endTransaction(); }
@@ -226,6 +240,66 @@ public final class OfflineDataStore {
                 database.setTransactionSuccessful();
             } finally { database.endTransaction(); }
             return localId;
+        });
+    }
+
+    public static void cancelAppointment(Context context, String appointmentId, Callback<Void> callback) {
+        execute(context, callback, database -> {
+            String id = appointmentId == null ? "" : appointmentId.trim();
+            if (id.isEmpty()) {
+                throw new IllegalArgumentException("Appointment id is required.");
+            }
+
+            long now = System.currentTimeMillis();
+            ContentValues appointmentValues = new ContentValues();
+            appointmentValues.put("status", "CANCELLED");
+            appointmentValues.put("cancelled_at_ms", now);
+            appointmentValues.put("updated_at_ms", now);
+            appointmentValues.put("sync_status", "PENDING_SYNC");
+
+            database.beginTransaction();
+            try {
+                int changed = database.update("appointments", appointmentValues,
+                        "local_id = ? OR firestore_document_id = ?", new String[]{id, id});
+                if (changed == 0) {
+                    throw new IllegalStateException("Appointment is not available offline.");
+                }
+
+                try (Cursor cursor = database.query("appointments", new String[]{"local_id"},
+                        "local_id = ? OR firestore_document_id = ?", new String[]{id, id},
+                        null, null, null)) {
+                    if (!cursor.moveToFirst()) {
+                        throw new IllegalStateException("Appointment is not available offline.");
+                    }
+                    String localId = cursor.getString(0);
+                    JSONObject payload = new JSONObject();
+                    payload.put("cancelledAtMillis", now);
+                    ContentValues queue = new ContentValues();
+                    queue.put("entity_type", "APPOINTMENT");
+                    queue.put("entity_local_id", localId);
+                    queue.put("operation", "CANCEL");
+                    queue.put("payload_json", payload.toString());
+                    queue.put("queue_status", "PENDING");
+                    queue.put("retry_count", 0);
+                    queue.put("created_at_ms", now);
+                    database.insert("sync_queue", null, queue);
+                }
+                database.setTransactionSuccessful();
+            } finally {
+                database.endTransaction();
+            }
+            return null;
+        });
+    }
+
+    public static void markExpiredAppointmentsCompleted(Context context, String userUid) {
+        executeWrite(context, database -> {
+            ContentValues values = new ContentValues();
+            values.put("status", "COMPLETED");
+            values.put("updated_at_ms", System.currentTimeMillis());
+            database.update("appointments", values,
+                    "user_uid = ? AND status = ? AND end_at_ms <= ?",
+                    new String[]{userUid, "UPCOMING", String.valueOf(System.currentTimeMillis())});
         });
     }
 

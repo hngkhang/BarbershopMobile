@@ -9,9 +9,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 
 import com.example.barbershop.adapters.AppointmentAdapter;
+import com.example.barbershop.data.AppointmentRepository;
 
 import java.util.Locale;
 
@@ -32,11 +35,13 @@ public class AppointmentDetailActivity extends AppCompatActivity {
     private String barberSpecialty;
     private String appointmentNote;
     private String appointmentCreatedAt;
+    private AppointmentRepository appointmentRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment_detail);
+        appointmentRepository = new AppointmentRepository(this);
 
         readAppointmentExtras();
         bindAppointmentDetails();
@@ -106,6 +111,10 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         findViewById(R.id.textDetailPaymentStatus).setVisibility(View.GONE);
         findViewById(R.id.textDetailPaymentMethod).setVisibility(View.GONE);
         findViewById(R.id.buttonViewPayment).setVisibility(isPaid ? View.GONE : View.VISIBLE);
+        findViewById(R.id.buttonCancelAppointment).setVisibility(
+                AppointmentAdapter.AppointmentItem.STATUS_UPCOMING.equals(appointmentStatus)
+                        ? View.VISIBLE : View.GONE
+        );
 
         TextView bookedTimeline = findViewById(R.id.textTimelineBooked);
         bookedTimeline.setVisibility(appointmentCreatedAt.isEmpty() ? View.GONE : View.VISIBLE);
@@ -122,9 +131,42 @@ public class AppointmentDetailActivity extends AppCompatActivity {
     private void setupActions() {
         findViewById(R.id.buttonBack).setOnClickListener(v -> finish());
         findViewById(R.id.buttonViewPayment).setOnClickListener(v -> openPayment());
-        findViewById(R.id.buttonCancelAppointment).setOnClickListener(v -> {
-            // Cancellation will be connected to the Firestore booking flow separately.
-            Toast.makeText(this, R.string.appointment_cancel_todo, Toast.LENGTH_SHORT).show();
+        findViewById(R.id.buttonCancelAppointment).setOnClickListener(v -> confirmCancellation());
+    }
+
+    private void confirmCancellation() {
+        if (appointmentId.isEmpty()) {
+            Toast.makeText(this, R.string.state_error_placeholder, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.appointment_cancel_confirm_title)
+                .setMessage(R.string.appointment_cancel_confirm_message)
+                .setNegativeButton(R.string.action_cancel, null)
+                .setPositiveButton(R.string.appointment_cancel, (dialog, which) -> cancelAppointment())
+                .show();
+    }
+
+    private void cancelAppointment() {
+        AppCompatButton cancelButton = findViewById(R.id.buttonCancelAppointment);
+        cancelButton.setEnabled(false);
+        appointmentRepository.cancelAppointment(appointmentId, new AppointmentRepository.RepositoryCallback<Void>() {
+            @Override
+            public void onSuccess(Void ignored) {
+                Toast.makeText(AppointmentDetailActivity.this,
+                        R.string.appointment_cancel_success, Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                cancelButton.setEnabled(true);
+                String message = exception == null || exception.getMessage() == null
+                        ? getString(R.string.state_error_placeholder) : exception.getMessage();
+                Toast.makeText(AppointmentDetailActivity.this,
+                        getString(R.string.appointment_cancel_failed, message), Toast.LENGTH_LONG).show();
+            }
         });
     }
 

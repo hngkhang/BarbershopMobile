@@ -42,11 +42,12 @@ public class ReviewActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firestore;
     private long barberId = INVALID_BARBER_ID;
+    private String appointmentId = "";
     private boolean barberLoaded;
+    private boolean reviewAlreadySubmitted;
     private boolean submitting;
     private RatingBar ratingBar;
     private TextView ratingLabel;
-    private TextView reviewCounter;
     private EditText reviewEditText;
     private AppCompatButton submitButton;
 
@@ -57,6 +58,7 @@ public class ReviewActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
         barberId = getIntent().getLongExtra("barberId", INVALID_BARBER_ID);
+        appointmentId = readText(getIntent().getStringExtra("appointmentId"), "");
         setupBarberProfileHeader();
         setupRating();
         setupFeedbackChips();
@@ -150,13 +152,24 @@ public class ReviewActivity extends AppCompatActivity {
                         querySnapshot -> {
                             double totalRate = 0.0;
                             long ratingCount = 0L;
+                            FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+                            String currentUserId = currentUser == null ? "" : currentUser.getUid();
                             for (DocumentSnapshot document : querySnapshot.getDocuments()) {
                                 Double rate = readDouble(document.get("rate"));
                                 if (rate == null || rate <= 0 || rate > 5) continue;
                                 totalRate += rate;
                                 ratingCount++;
+                                if (!currentUserId.isEmpty()
+                                        && currentUserId.equals(readText(document.get("userId"), ""))
+                                        && isReviewForCurrentAppointment(document)) {
+                                    reviewAlreadySubmitted = true;
+                                }
                             }
                             displayAverageRating(totalRate, ratingCount);
+                            if (reviewAlreadySubmitted) {
+                                showAlreadyReviewedState();
+                                return;
+                            }
                             barberLoaded = true;
                             setSubmitEnabled(true);
                         }
@@ -220,6 +233,29 @@ public class ReviewActivity extends AppCompatActivity {
                         ratingCount
                 )
         );
+    }
+
+    private boolean isReviewForCurrentAppointment(DocumentSnapshot document) {
+        if (appointmentId.isEmpty()) {
+            return false;
+        }
+        String reviewedAppointmentId = readText(document.get("appointmentId"), "");
+        // Older reviews were not linked to an appointment, so treat the user's existing
+        // review for this barber as submitted to prevent an accidental duplicate.
+        return reviewedAppointmentId.isEmpty() || appointmentId.equals(reviewedAppointmentId);
+    }
+
+    private void showAlreadyReviewedState() {
+        barberLoaded = false;
+        findViewById(R.id.textReviewAlreadySubmitted).setVisibility(android.view.View.VISIBLE);
+        findViewById(R.id.textReviewRateHeading).setVisibility(android.view.View.GONE);
+        ratingBar.setVisibility(android.view.View.GONE);
+        ratingLabel.setVisibility(android.view.View.GONE);
+        findViewById(R.id.textReviewFeedbackHeading).setVisibility(android.view.View.GONE);
+        findViewById(R.id.layoutReviewChips).setVisibility(android.view.View.GONE);
+        findViewById(R.id.textReviewWriteHeading).setVisibility(android.view.View.GONE);
+        reviewEditText.setVisibility(android.view.View.GONE);
+        submitButton.setVisibility(android.view.View.GONE);
     }
 
     private void setupRating() {
@@ -340,11 +376,6 @@ public class ReviewActivity extends AppCompatActivity {
                         R.id.editTextReview
                 );
 
-        reviewCounter =
-                findViewById(
-                        R.id.textReviewCounter
-                );
-
         reviewEditText.addTextChangedListener(
                 new TextWatcher() {
 
@@ -365,12 +396,6 @@ public class ReviewActivity extends AppCompatActivity {
                             int before,
                             int count
                     ) {
-                        reviewCounter.setText(
-                                getString(
-                                        R.string.review_character_counter_format,
-                                        text.length()
-                                )
-                        );
                     }
 
                     @Override
@@ -410,6 +435,7 @@ public class ReviewActivity extends AppCompatActivity {
         if (
                 submitting
                         || !barberLoaded
+                        || reviewAlreadySubmitted
         ) {
             return;
         }
@@ -486,19 +512,6 @@ public class ReviewActivity extends AppCompatActivity {
                 COLLECTION_RATINGS,
                 "ratingId",
                 latestRatingId -> {
-                    if (feedbackContent.isEmpty()) {
-                        runCreateReviewTransaction(
-                                userId,
-                                rate,
-                                feedbackContent,
-                                latestRatingId,
-                                0L,
-                                attempt
-                        );
-
-                        return;
-                    }
-
                     loadLatestId(
                             COLLECTION_FEEDBACKS,
                             "feedbackId",
@@ -610,17 +623,14 @@ public class ReviewActivity extends AppCompatActivity {
                                 )
                         );
 
-        DocumentReference feedbackReference =
-                feedbackContent.isEmpty()
-                        ? null
-                        : firestore.collection(
-                                COLLECTION_FEEDBACKS
+        DocumentReference feedbackReference = firestore.collection(
+                        COLLECTION_FEEDBACKS
+                )
+                .document(
+                        formatFeedbackDocumentId(
+                                nextFeedbackId
                         )
-                        .document(
-                                formatFeedbackDocumentId(
-                                        nextFeedbackId
-                                )
-                        );
+                );
 
         firestore.runTransaction(
                 transaction -> {
@@ -633,15 +643,7 @@ public class ReviewActivity extends AppCompatActivity {
                                     ratingReference
                             );
 
-                    DocumentSnapshot existingFeedback =
-                            null;
-
-                    if (feedbackReference != null) {
-                        existingFeedback =
-                                transaction.get(
-                                        feedbackReference
-                                );
-                    }
+                    DocumentSnapshot existingFeedback = transaction.get(feedbackReference);
 
                     /*
                      * Nếu ID đã được thiết bị khác tạo,
@@ -651,10 +653,7 @@ public class ReviewActivity extends AppCompatActivity {
                         throw new IdConflictException();
                     }
 
-                    if (
-                            existingFeedback != null
-                                    && existingFeedback.exists()
-                    ) {
+                    if (existingFeedback.exists()) {
                         throw new IdConflictException();
                     }
 
@@ -676,6 +675,11 @@ public class ReviewActivity extends AppCompatActivity {
                             barberId
                     );
 
+                    if (!appointmentId.isEmpty()) {
+                        ratingData.put("appointmentId", appointmentId);
+                    }
+                    ratingData.put("feedbackId", nextFeedbackId);
+
                     ratingData.put(
                             "rate",
                             rate
@@ -691,40 +695,17 @@ public class ReviewActivity extends AppCompatActivity {
                             ratingData
                     );
 
-                    if (feedbackReference != null) {
-                        Map<String, Object> feedbackData =
-                                new HashMap<>();
-
-                        feedbackData.put(
-                                "feedbackId",
-                                nextFeedbackId
-                        );
-
-                        feedbackData.put(
-                                "userId",
-                                userId
-                        );
-
-                        feedbackData.put(
-                                "barberId",
-                                barberId
-                        );
-
-                        feedbackData.put(
-                                "content",
-                                feedbackContent
-                        );
-
-                        feedbackData.put(
-                                "createdAt",
-                                FieldValue.serverTimestamp()
-                        );
-
-                        transaction.set(
-                                feedbackReference,
-                                feedbackData
-                        );
+                    Map<String, Object> feedbackData = new HashMap<>();
+                    feedbackData.put("feedbackId", nextFeedbackId);
+                    feedbackData.put("userId", userId);
+                    feedbackData.put("barberId", barberId);
+                    if (!appointmentId.isEmpty()) {
+                        feedbackData.put("appointmentId", appointmentId);
                     }
+                    feedbackData.put("content", feedbackContent.isEmpty()
+                            ? getString(R.string.review_no_written_feedback) : feedbackContent);
+                    feedbackData.put("createdAt", FieldValue.serverTimestamp());
+                    transaction.set(feedbackReference, feedbackData);
 
                     return null;
                 }
@@ -885,6 +866,7 @@ public class ReviewActivity extends AppCompatActivity {
         setSubmitEnabled(
                 !submitting
                         && barberLoaded
+                        && !reviewAlreadySubmitted
         );
     }
 

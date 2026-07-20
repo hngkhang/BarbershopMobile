@@ -142,6 +142,21 @@
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
+                android:id="@+id/textReviewAlreadySubmitted"
+                style="@style/TextAppearance_ArtBarbershop_Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_20"
+                android:background="@drawable/bg_card_white_rounded"
+                android:gravity="center"
+                android:padding="@dimen/space_16"
+                android:text="@string/review_already_submitted"
+                android:textColor="@color/color_primary"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/textReviewRateHeading"
                 style="@style/TextAppearance_ArtBarbershop_Body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -174,6 +189,7 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/textReviewFeedbackHeading"
                 style="@style/TextAppearance_ArtBarbershop_Body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -183,6 +199,7 @@
                 android:textStyle="bold" />
 
             <LinearLayout
+                android:id="@+id/layoutReviewChips"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_10"
@@ -279,6 +296,7 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/textReviewWriteHeading"
                 style="@style/TextAppearance_ArtBarbershop_Body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -295,21 +313,11 @@
                 android:layout_marginTop="@dimen/space_8"
                 android:background="@drawable/bg_review_text_area"
                 android:gravity="top|start"
-                android:hint="@string/review_hint"
                 android:inputType="textMultiLine|textCapSentences"
                 android:maxLength="300"
                 android:padding="@dimen/space_12"
                 android:textColor="@color/color_text_primary"
                 android:textColorHint="@color/color_text_muted" />
-
-            <TextView
-                android:id="@+id/textReviewCounter"
-                style="@style/TextAppearance_ArtBarbershop_Caption"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:text="@string/review_character_counter_zero"
-                tools:text="0/300" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/buttonSubmitReview"
@@ -319,27 +327,6 @@
                 android:layout_marginTop="@dimen/space_16"
                 android:text="@string/review_submit" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_20"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="@dimen/booking_row_icon_size"
-                    android:layout_height="@dimen/booking_row_icon_size"
-                    android:contentDescription="@string/review_trust_note"
-                    android:src="@drawable/ic_lock" />
-
-                <TextView
-                    style="@style/TextAppearance_ArtBarbershop_Caption"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/space_8"
-                    android:layout_weight="1"
-                    android:text="@string/review_trust_note" />
-            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

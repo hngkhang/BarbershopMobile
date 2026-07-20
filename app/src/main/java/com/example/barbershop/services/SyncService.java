@@ -138,6 +138,7 @@ public class SyncService extends JobService {
         try {
             if (!userUid.isEmpty()) {
                 pushPendingAppointments(database, firestore, userUid);
+                completeExpiredRemoteAppointments(firestore, userUid);
             }
             pullServices(database, firestore);
             pullBarbers(database, firestore);
@@ -149,6 +150,31 @@ public class SyncService extends JobService {
         } finally {
             database.close();
             helper.close();
+        }
+    }
+
+    /** Marks appointments complete once their scheduled end time has passed. */
+    private void completeExpiredRemoteAppointments(FirebaseFirestore firestore, String userUid) throws Exception {
+        QuerySnapshot snapshot = await(firestore.collection("appointments")
+                .whereEqualTo("userUid", userUid)
+                .get());
+        long now = System.currentTimeMillis();
+        com.google.firebase.firestore.WriteBatch batch = firestore.batch();
+        int count = 0;
+        for (DocumentSnapshot document : snapshot.getDocuments()) {
+            Timestamp endAt = document.getTimestamp("endAt");
+            String status = stringValue(document.get("status"));
+            if (endAt != null && endAt.toDate().getTime() <= now
+                    && "UPCOMING".equalsIgnoreCase(status)) {
+                Map<String, Object> values = new HashMap<>();
+                values.put("status", "COMPLETED");
+                values.put("updatedAt", FieldValue.serverTimestamp());
+                batch.update(document.getReference(), values);
+                count++;
+            }
+        }
+        if (count > 0) {
+            await(batch.commit());
         }
     }
 

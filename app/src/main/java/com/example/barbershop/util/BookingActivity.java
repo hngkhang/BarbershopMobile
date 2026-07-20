@@ -68,13 +68,9 @@ public class BookingActivity extends AppCompatActivity {
     private TextView textSelectedServicePrice;
     private TextView textSelectedBarberInitial;
     private TextView textSelectedBarberName;
-    private TextView textSelectedBarberExperience;
-    private TextView textSelectedBarberSpecialty;
     private TextView textTotalDuration;
     private TextView textTotalPrice;
     private TextView textNoteCounter;
-    private TextView textBookingAvailabilityMessage;
-    private TextView textBookingTimeMessage;
     private TextInputEditText editTextBookingNote;
     private LinearLayout dateSelectorRow;
     private GridLayout timeSlotGrid;
@@ -105,13 +101,9 @@ public class BookingActivity extends AppCompatActivity {
         textSelectedServicePrice = findViewById(R.id.textSelectedServicePrice);
         textSelectedBarberInitial = findViewById(R.id.textSelectedBarberInitial);
         textSelectedBarberName = findViewById(R.id.textSelectedBarberName);
-        textSelectedBarberExperience = findViewById(R.id.textSelectedBarberExperience);
-        textSelectedBarberSpecialty = findViewById(R.id.textSelectedBarberSpecialty);
         textTotalDuration = findViewById(R.id.textTotalDuration);
         textTotalPrice = findViewById(R.id.textTotalPrice);
         textNoteCounter = findViewById(R.id.textNoteCounter);
-        textBookingAvailabilityMessage = findViewById(R.id.textBookingAvailabilityMessage);
-        textBookingTimeMessage = findViewById(R.id.textBookingTimeMessage);
         editTextBookingNote = findViewById(R.id.editTextBookingNote);
         dateSelectorRow = findViewById(R.id.dateSelectorRow);
         timeSlotGrid = findViewById(R.id.timeSlotGrid);
@@ -137,11 +129,6 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private void setupServiceSection() {
-        findViewById(R.id.buttonAddMoreServices).setOnClickListener(v -> {
-            Intent intent = new Intent(this, ServiceListActivity.class);
-            intent.putExtra(EXTRA_SERVICE_SELECTION_MODE, true);
-            startActivityForResult(intent, REQUEST_SELECT_SERVICE);
-        });
     }
 
     private void setupBarberSection() {
@@ -445,8 +432,6 @@ public class BookingActivity extends AppCompatActivity {
                 getString(R.string.booking_barber_avatar_content_description, selectedBarberName)
         );
         textSelectedBarberName.setText(selectedBarberName);
-        textSelectedBarberExperience.setText(formatExperience(selectedBarberExperience));
-        textSelectedBarberSpecialty.setText(R.string.barber_specialty_not_available);
     }
 
     private void bindDateUi() {
@@ -509,38 +494,6 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private void bindAvailabilityMessages() {
-        String availabilityMessage = "";
-        if (selectedService == null) {
-            availabilityMessage = getString(R.string.booking_select_service_prompt);
-        } else if (selectedService.getTimeMinutes() <= 0) {
-            availabilityMessage = getString(R.string.booking_service_duration_missing);
-        } else if (selectedBarberId <= 0L) {
-            availabilityMessage = getString(R.string.booking_select_barber_prompt);
-        } else if (availabilityLoading) {
-            availabilityMessage = getString(R.string.booking_loading_availability);
-        } else if (dateOptions.isEmpty()) {
-            availabilityMessage = getString(R.string.booking_no_availability);
-        }
-        showMessage(textBookingAvailabilityMessage, availabilityMessage);
-
-        String timeMessage = "";
-        if (selectedService != null && selectedService.getTimeMinutes() > 0
-                && selectedBarberId > 0L && !availabilityLoading) {
-            if (selectedDateOption == null) {
-                timeMessage = getString(R.string.booking_select_date_prompt);
-            } else if (calculateSlotsForDate(selectedDateOption).isEmpty()) {
-                timeMessage = getString(R.string.booking_no_slots);
-            }
-        }
-        showMessage(textBookingTimeMessage, timeMessage);
-    }
-
-    private void showMessage(TextView textView, String message) {
-        boolean visible = message != null && !message.isEmpty();
-        textView.setVisibility(visible ? View.VISIBLE : View.GONE);
-        if (visible) {
-            textView.setText(message);
-        }
     }
 
     private void bindSummaryUi() {

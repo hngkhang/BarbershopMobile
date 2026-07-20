@@ -181,30 +181,8 @@ public class PaymentActivity extends AppCompatActivity {
     }
 
     private void openPaidAppointmentDetail(MakePaymentService.PaymentResult paymentResult) {
-        if (returnToAppointmentsAfterPayment) {
-            Intent intent = new Intent(this, AppointmentActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
-            return;
-        }
-        Intent intent = new Intent(this, AppointmentDetailActivity.class);
-        intent.putExtra("appointmentId", appointmentDocumentId);
-        intent.putExtra("appointmentStatus", getString(R.string.appointment_status_upcoming));
-        intent.putExtra("barberName", barberName);
-        intent.putExtra("barberExperience", barberExperience);
-        intent.putExtra("barberSpecialty", barberSpecialty);
-        intent.putExtra("serviceName", serviceName);
-        intent.putExtra("appointmentPrice", amount);
-        intent.putExtra("appointmentDate", dateLabel);
-        intent.putExtra("appointmentStartTime", startTime);
-        intent.putExtra("appointmentEndTime", endTime);
-        intent.putExtra("appointmentDuration", String.format(Locale.US, "%d min", durationMinutes));
-        intent.putExtra("paymentStatus", displayPaymentStatus(paymentResult.getStatus()));
-        intent.putExtra("paymentMethod", paymentResult.getMethod());
-        intent.putExtra("appointmentNote", appointmentNote);
-        intent.putExtra("appointmentCreatedAt", appointmentCreatedAt);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
