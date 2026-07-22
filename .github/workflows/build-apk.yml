@@ -23,17 +23,18 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install required Android SDK packages
+        run: |
+          sdkmanager --channel=3 \
+            "platform-tools" \
+            "platforms;android-36.1" \
+            "build-tools;36.0.0"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses > /dev/null || true
-
-      - name: Install Android SDK
-        run: |
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-36.1"
-          sdkmanager "build-tools;36.0.0"
 
       - name: Grant permission to Gradle Wrapper
         run: chmod +x gradlew
